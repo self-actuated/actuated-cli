@@ -14,7 +14,7 @@ import (
 func makeJobs() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "jobs",
-		Short: "List Jobs",
+		Short: "List jobs in the build queue",
 	}
 
 	cmd.RunE = runJobsE
