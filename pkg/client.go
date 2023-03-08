@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 )
 
 type Client struct {
@@ -148,6 +149,124 @@ func (c *Client) Repair(patFile string, owner string, staff bool) (string, int, 
 	}
 
 	q.Set("owner", owner)
+	u.RawQuery = q.Encode()
+
+	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
+	if err != nil {
+		return "", http.StatusBadRequest, err
+	}
+
+	patData, err := os.ReadFile(os.ExpandEnv(patFile))
+	if err != nil {
+		return "", http.StatusBadRequest, err
+	}
+
+	patStr := strings.TrimSpace(string(patData))
+
+	req.Header.Set("Authorization", "Bearer "+patStr)
+
+	if os.Getenv("DEBUG") == "1" {
+		sanitised := http.Header{}
+		for k, v := range req.Header {
+
+			if k == "Authorization" {
+				v = []string{"redacted"}
+			}
+			sanitised[k] = v
+		}
+
+		fmt.Printf("URL %s\nHeaders: %v\n", u.String(), sanitised)
+	}
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return "", http.StatusBadRequest, err
+	}
+
+	var body []byte
+	if res.Body != nil {
+		defer res.Body.Close()
+		body, _ = io.ReadAll(res.Body)
+	}
+
+	return string(body), res.StatusCode, nil
+}
+
+func (c *Client) GetAgentLogs(patFile, owner, host string, age time.Duration, staff bool) (string, int, error) {
+
+	mins := int(age.Minutes())
+
+	u, _ := url.Parse(c.baseURL)
+	u.Path = "/api/v1/logs"
+
+	q := u.Query()
+	q.Set("owner", owner)
+	q.Set("host", host)
+	q.Set("age", fmt.Sprintf("%dm", mins))
+
+	if staff {
+		q.Set("staff", "1")
+	}
+
+	u.RawQuery = q.Encode()
+
+	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
+	if err != nil {
+		return "", http.StatusBadRequest, err
+	}
+
+	patData, err := os.ReadFile(os.ExpandEnv(patFile))
+	if err != nil {
+		return "", http.StatusBadRequest, err
+	}
+
+	patStr := strings.TrimSpace(string(patData))
+
+	req.Header.Set("Authorization", "Bearer "+patStr)
+
+	if os.Getenv("DEBUG") == "1" {
+		sanitised := http.Header{}
+		for k, v := range req.Header {
+
+			if k == "Authorization" {
+				v = []string{"redacted"}
+			}
+			sanitised[k] = v
+		}
+
+		fmt.Printf("URL %s\nHeaders: %v\n", u.String(), sanitised)
+	}
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return "", http.StatusBadRequest, err
+	}
+
+	var body []byte
+	if res.Body != nil {
+		defer res.Body.Close()
+		body, _ = io.ReadAll(res.Body)
+	}
+
+	return string(body), res.StatusCode, nil
+}
+
+func (c *Client) GeServiceLogs(patFile, owner, host string, age time.Duration, staff bool) (string, int, error) {
+
+	mins := int(age.Minutes())
+
+	u, _ := url.Parse(c.baseURL)
+	u.Path = "/api/v1/service"
+
+	q := u.Query()
+	q.Set("owner", owner)
+	q.Set("host", host)
+	q.Set("age", fmt.Sprintf("%dm", mins))
+
+	if staff {
+		q.Set("staff", "1")
+	}
+
 	u.RawQuery = q.Encode()
 
 	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
