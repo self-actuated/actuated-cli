@@ -18,7 +18,7 @@ func makeAgentLogs() *cobra.Command {
 
 	cmd.RunE = runAgentLogsE
 
-	cmd.Flags().StringP("owner", "o", "", "List agentLogs owned by this user")
+	cmd.Flags().StringP("owner", "o", "", "Owner for the logs")
 	cmd.Flags().String("host", "", "Host or name of server as displayed in actuated")
 	cmd.Flags().BoolP("staff", "s", false, "List as a staff user")
 	cmd.Flags().DurationP("age", "a", time.Minute*15, "Age of logs to fetch")

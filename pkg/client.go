@@ -192,7 +192,7 @@ func (c *Client) Repair(patFile string, owner string, staff bool) (string, int, 
 	return string(body), res.StatusCode, nil
 }
 
-func (c *Client) GetAgentLogs(patFile, owner, host string, age time.Duration, staff bool) (string, int, error) {
+func (c *Client) GetLogs(patFile, owner, host string, age time.Duration, staff bool) (string, int, error) {
 
 	mins := int(age.Minutes())
 
@@ -251,7 +251,7 @@ func (c *Client) GetAgentLogs(patFile, owner, host string, age time.Duration, st
 	return string(body), res.StatusCode, nil
 }
 
-func (c *Client) GeServiceLogs(patFile, owner, host string, age time.Duration, staff bool) (string, int, error) {
+func (c *Client) GetAgentLogs(patFile, owner, host string, age time.Duration, staff bool) (string, int, error) {
 
 	mins := int(age.Minutes())
 

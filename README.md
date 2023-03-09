@@ -12,7 +12,7 @@ export ACTUATED_API=https://example.com
 
 Or, run this command in a shell before executing any of the CLI commands.
 
-## View jobs queue
+## View queued jobs
 
 ```bash
 actuated-cli jobs \
@@ -26,6 +26,40 @@ actuated-cli jobs \
 actuated-cli runners \
     --pat ~/reader.txt \
     --owner actuated-samples
+```
+
+
+## Check the logs of VMs
+
+View the serial console and systemd output of the VMs launched on a specific server.
+
+* Check for timeouts with GitHub's control-plane
+* View output from the GitHub runner binary
+* See boot-up messages
+* Check for errors if the GitHub Runner binary is out of date
+
+```bash
+actuated-cli logs \
+    --pat ~/reader.txt \
+    --host runner1 \
+    --owner actuated-samples \
+    --age 15m
+```
+
+The age is specified as a Go duration i.e. `60m` or `24h`.
+
+## Check the logs of the actuated agent service
+
+Show the logs of the actuated agent binary running on your server.
+
+View VM launch times, etc.
+
+```bash
+actuated-cli agent-logs \
+    --pat ~/reader.txt \
+    --host runner1 \
+    --owner actuated-samples \
+    --age 15m
 ```
 
 ## Schedule a repair to re-queue jobs

@@ -10,15 +10,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func makeServiceLogs() *cobra.Command {
+func makeLogs() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "service-logs",
+		Use:   "logs",
 		Short: "Fetch logs from the agent's systemd service",
 	}
 
-	cmd.RunE = runServiceLogsE
+	cmd.RunE = runLogsE
 
-	cmd.Flags().StringP("owner", "o", "", "List serviceLogs owned by this user")
+	cmd.Flags().StringP("owner", "o", "", "List logs owned by this user")
 	cmd.Flags().String("host", "", "Host or name of server as displayed in actuated")
 	cmd.Flags().BoolP("staff", "s", false, "List as a staff user")
 	cmd.Flags().DurationP("age", "a", time.Minute*15, "Age of logs to fetch")
@@ -26,7 +26,7 @@ func makeServiceLogs() *cobra.Command {
 	return cmd
 }
 
-func runServiceLogsE(cmd *cobra.Command, args []string) error {
+func runLogsE(cmd *cobra.Command, args []string) error {
 	pat, err := cmd.Flags().GetString("pat")
 	if err != nil {
 		return err
@@ -65,7 +65,7 @@ func runServiceLogsE(cmd *cobra.Command, args []string) error {
 
 	c := pkg.NewClient(http.DefaultClient, os.Getenv("ACTUATED_API"))
 
-	res, status, err := c.GeServiceLogs(pat, owner, host, age, staff)
+	res, status, err := c.GetLogs(pat, owner, host, age, staff)
 
 	if err != nil {
 		return err

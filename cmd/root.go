@@ -31,7 +31,7 @@ func init() {
 	root.AddCommand(makeJobs())
 	root.AddCommand(makeRepair())
 	root.AddCommand(makeAgentLogs())
-	root.AddCommand(makeServiceLogs())
+	root.AddCommand(makeLogs())
 
 }
 
