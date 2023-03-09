@@ -32,7 +32,7 @@ func init() {
 	root.AddCommand(makeRepair())
 	root.AddCommand(makeAgentLogs())
 	root.AddCommand(makeLogs())
-
+	root.AddCommand(makeUpgrade())
 }
 
 func Execute() error {

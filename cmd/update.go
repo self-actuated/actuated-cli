@@ -10,21 +10,23 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func makeRepair() *cobra.Command {
+func makeUpgrade() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "repair",
-		Short: "Schedule additional VMs to repair the build queue",
+		Use:   "upgrade",
+		Short: "Upgrade an agent's kernel and root filesystem",
 	}
 
-	cmd.RunE = runRepairE
+	cmd.RunE = runUpgradeE
 
-	cmd.Flags().StringP("owner", "o", "", "List repair owned by this user")
-	cmd.Flags().BoolP("staff", "s", false, "List staff repair")
+	cmd.Flags().StringP("owner", "o", "", "Owner")
+	cmd.Flags().BoolP("staff", "s", false, "Staff flag")
+	cmd.Flags().BoolP("force", "f", false, "Force upgrade")
+	cmd.Flags().String("host", "", "Host to upgrade")
 
 	return cmd
 }
 
-func runRepairE(cmd *cobra.Command, args []string) error {
+func runUpgradeE(cmd *cobra.Command, args []string) error {
 	pat, err := cmd.Flags().GetString("pat")
 	if err != nil {
 		return err
@@ -40,6 +42,16 @@ func runRepairE(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	force, err := cmd.Flags().GetBool("force")
+	if err != nil {
+		return err
+	}
+
+	host, err := cmd.Flags().GetString("host")
+	if err != nil {
+		return err
+	}
+
 	if len(owner) == 0 {
 		return fmt.Errorf("owner is required")
 	}
@@ -50,7 +62,7 @@ func runRepairE(cmd *cobra.Command, args []string) error {
 
 	c := pkg.NewClient(http.DefaultClient, os.Getenv("ACTUATED_API"))
 
-	res, status, err := c.Repair(pat, owner, staff)
+	res, status, err := c.UpgradeAgent(pat, owner, host, force, staff)
 	if err != nil {
 		return err
 	}
@@ -60,7 +72,7 @@ func runRepairE(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("unexpected status code: %d", status)
 	}
 
-	fmt.Printf("Repair requested for %s, status: %d\n", owner, status)
+	fmt.Printf("Upgrade requested for %s, status: %d\n", owner, status)
 	if strings.TrimSpace(res) != "" {
 		fmt.Printf("Response: %s\n", res)
 	}
