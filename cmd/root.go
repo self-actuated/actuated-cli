@@ -21,8 +21,8 @@ func init() {
 	// add global flag for PAT
 	root.PersistentFlags().StringP("pat", "p", "", "Personal Access Token")
 	root.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
-		if _, ok := os.LookupEnv("ACTUATED_API"); !ok {
-			return fmt.Errorf("ACTUATED_API environment variable is not set")
+		if _, ok := os.LookupEnv("ACTUATED_URL"); !ok {
+			return fmt.Errorf("ACTUATED_URL environment variable is not set")
 		}
 		return nil
 	}

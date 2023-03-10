@@ -7,7 +7,7 @@ Download the latest release from the [releases page](https://github.com/self-act
 Then add the URL to either .bashrc or .zshrc:
 
 ```bash
-export ACTUATED_API=https://example.com
+export ACTUATED_URL=https://example.com
 ```
 
 Or, run this command in a shell before executing any of the CLI commands.

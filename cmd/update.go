@@ -60,7 +60,7 @@ func runUpgradeE(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("pat is required")
 	}
 
-	c := pkg.NewClient(http.DefaultClient, os.Getenv("ACTUATED_API"))
+	c := pkg.NewClient(http.DefaultClient, os.Getenv("ACTUATED_URL"))
 
 	res, status, err := c.UpgradeAgent(pat, owner, host, force, staff)
 	if err != nil {

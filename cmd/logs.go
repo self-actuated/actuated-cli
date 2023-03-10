@@ -63,7 +63,7 @@ func runLogsE(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("pat is required")
 	}
 
-	c := pkg.NewClient(http.DefaultClient, os.Getenv("ACTUATED_API"))
+	c := pkg.NewClient(http.DefaultClient, os.Getenv("ACTUATED_URL"))
 
 	res, status, err := c.GetLogs(pat, owner, host, age, staff)
 
