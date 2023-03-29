@@ -48,6 +48,16 @@ actuated-cli logs \
 
 The age is specified as a Go duration i.e. `60m` or `24h`.
 
+You can also get the logs for a specific runner by using the `--id` flag.
+
+```bash
+actuated-cli logs \
+    --pat ~/reader.txt \
+    --host runner1 \
+    --owner actuated-samples \
+    --id ea5c285282620927689d90af3cfa3be2d5e2d004
+```
+
 ## Check the logs of the actuated agent service
 
 Show the logs of the actuated agent binary running on your server.
