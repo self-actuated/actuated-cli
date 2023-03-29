@@ -21,6 +21,7 @@ func makeLogs() *cobra.Command {
 	cmd.Flags().StringP("owner", "o", "", "List logs owned by this user")
 	cmd.Flags().String("host", "", "Host or name of server as displayed in actuated")
 	cmd.Flags().BoolP("staff", "s", false, "List as a staff user")
+	cmd.Flags().String("id", "", "ID variable for a specific runner VM hostname")
 	cmd.Flags().DurationP("age", "a", time.Minute*15, "Age of logs to fetch")
 
 	return cmd
@@ -51,6 +52,9 @@ func runLogsE(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+
+	id, err := cmd.Flags().GetString("id")
+
 	if len(host) == 0 {
 		return fmt.Errorf("host is required")
 	}
@@ -65,7 +69,7 @@ func runLogsE(cmd *cobra.Command, args []string) error {
 
 	c := pkg.NewClient(http.DefaultClient, os.Getenv("ACTUATED_URL"))
 
-	res, status, err := c.GetLogs(pat, owner, host, age, staff)
+	res, status, err := c.GetLogs(pat, owner, host, id, age, staff)
 
 	if err != nil {
 		return err
