@@ -69,7 +69,7 @@ func runUpgradeE(cmd *cobra.Command, args []string) error {
 
 	if status != http.StatusOK && status != http.StatusAccepted &&
 		status != http.StatusNoContent && status != http.StatusCreated {
-		return fmt.Errorf("unexpected status code: %d", status)
+			return fmt.Errorf("unexpected status code: %d, error: %w", status, res)
 	}
 
 	fmt.Printf("Upgrade requested for %s, status: %d\n", owner, status)
