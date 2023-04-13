@@ -30,6 +30,8 @@ func init() {
 	root.AddCommand(makeRunners())
 	root.AddCommand(makeJobs())
 	root.AddCommand(makeRepair())
+	root.AddCommand(makeRestart())
+
 	root.AddCommand(makeAgentLogs())
 	root.AddCommand(makeLogs())
 	root.AddCommand(makeUpgrade())
