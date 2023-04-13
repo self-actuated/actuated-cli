@@ -42,7 +42,7 @@ func runRestartE(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	force, err := cmd.Flags().GetBool("force")
+	reboot, err := cmd.Flags().GetBool("reboot")
 	if err != nil {
 		return err
 	}
@@ -62,14 +62,14 @@ func runRestartE(cmd *cobra.Command, args []string) error {
 
 	c := pkg.NewClient(http.DefaultClient, os.Getenv("ACTUATED_URL"))
 
-	res, status, err := c.RestartAgent(pat, owner, host, force, staff)
+	res, status, err := c.RestartAgent(pat, owner, host, reboot, staff)
 	if err != nil {
 		return err
 	}
 
 	if status != http.StatusOK && status != http.StatusAccepted &&
 		status != http.StatusNoContent && status != http.StatusCreated {
-		return fmt.Errorf("unexpected status code: %d, error: %w", status, res)
+		return fmt.Errorf("unexpected status code: %d, error: %s", status, res)
 	}
 
 	fmt.Printf("Restart requested for %s, status: %d\n", owner, status)
