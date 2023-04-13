@@ -86,6 +86,31 @@ actuated-cli repair \
     --owner actuated-samples
 ```
 
+## Rescue a remote server
+
+Restart the agent by sending a `kill -9` signal:
+
+```bash
+actuated-cli restart \
+    --pat ~/reader.txt \
+    --owner actuated-samples \
+    --host runner1
+```
+
+Any inflight VMs will be killed, see also: `actuated-cli update --force`
+
+Reboot the machine, if in an unrecoverable position:
+
+```bash
+actuated-cli restart \
+    --pat ~/reader.txt \
+    --owner actuated-samples \
+    --host runner1 \
+    --reboot
+```
+
+Use with caution, since this may not perform a safe and clean shutdown.
+
 ## JSON mode
 
 Add `--json` to any command to get JSON output for scripting.
