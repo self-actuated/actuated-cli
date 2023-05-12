@@ -35,6 +35,8 @@ func init() {
 	root.AddCommand(makeAgentLogs())
 	root.AddCommand(makeLogs())
 	root.AddCommand(makeUpgrade())
+
+	root.AddCommand(makeSSH())
 }
 
 func Execute() error {
