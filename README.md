@@ -16,7 +16,7 @@ Or, run this command in a shell before executing any of the CLI commands.
 
 ```bash
 actuated-cli jobs \
-    --pat ~/reader.txt \
+    --token ~/reader.txt \
     --owner actuated-samples
 ```
 
@@ -24,10 +24,38 @@ actuated-cli jobs \
 
 ```bash
 actuated-cli runners \
-    --pat ~/reader.txt \
+    --token ~/reader.txt \
     --owner actuated-samples
 ```
 
+## View SSH sessions available:
+
+```bash
+actuated-cli ssh \
+    --token ~/reader.txt \
+    ssh ls
+
+| ACTOR | HOSTNAME | RX | TX | CONNECTED |
+|-------|----------|----|----|-----------|
+```
+
+## Connect to an SSH session
+
+Connect to the first available session from your account:
+
+```bash
+actuated-cli ssh \
+    --token ~/reader.txt \
+    ssh connect
+```
+
+Connect to a specific session by hostname:
+
+```bash
+actuated-cli ssh \
+    --token ~/reader.txt \
+    ssh connect --host runner1
+```
 
 ## Check the logs of VMs
 
@@ -40,7 +68,7 @@ View the serial console and systemd output of the VMs launched on a specific ser
 
 ```bash
 actuated-cli logs \
-    --pat ~/reader.txt \
+    --token ~/reader.txt \
     --host runner1 \
     --owner actuated-samples \
     --age 15m
@@ -52,7 +80,7 @@ You can also get the logs for a specific runner by using the `--id` flag.
 
 ```bash
 actuated-cli logs \
-    --pat ~/reader.txt \
+    --token ~/reader.txt \
     --host runner1 \
     --owner actuated-samples \
     --id ea5c285282620927689d90af3cfa3be2d5e2d004
@@ -66,7 +94,7 @@ View VM launch times, etc.
 
 ```bash
 actuated-cli agent-logs \
-    --pat ~/reader.txt \
+    --token ~/reader.txt \
     --host runner1 \
     --owner actuated-samples \
     --age 15m
@@ -82,7 +110,7 @@ Run with sparingly because it will launch one VM per job queued.
 
 ```bash
 actuated-cli repair \
-    --pat ~/reader.txt \
+    --token ~/reader.txt \
     --owner actuated-samples
 ```
 
@@ -92,7 +120,7 @@ Restart the agent by sending a `kill -9` signal:
 
 ```bash
 actuated-cli restart \
-    --pat ~/reader.txt \
+    --token ~/reader.txt \
     --owner actuated-samples \
     --host runner1
 ```
@@ -103,7 +131,7 @@ Reboot the machine, if in an unrecoverable position:
 
 ```bash
 actuated-cli restart \
-    --pat ~/reader.txt \
+    --token ~/reader.txt \
     --owner actuated-samples \
     --host runner1 \
     --reboot

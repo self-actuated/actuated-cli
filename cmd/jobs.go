@@ -27,7 +27,7 @@ func makeJobs() *cobra.Command {
 }
 
 func runJobsE(cmd *cobra.Command, args []string) error {
-	pat, err := cmd.Flags().GetString("pat")
+	pat, err := getPat(cmd)
 	if err != nil {
 		return err
 	}

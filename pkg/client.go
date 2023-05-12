@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"strings"
 	"time"
 )
 
@@ -22,7 +21,7 @@ func NewClient(httpClient *http.Client, baseURL string) *Client {
 	}
 }
 
-func (c *Client) ListJobs(patFile string, owner string, staff bool, json bool) (string, int, error) {
+func (c *Client) ListJobs(patStr string, owner string, staff bool, json bool) (string, int, error) {
 
 	u, _ := url.Parse(c.baseURL)
 	u.Path = "/api/v1/job-queue"
@@ -44,13 +43,6 @@ func (c *Client) ListJobs(patFile string, owner string, staff bool, json bool) (
 		req.Header.Set("Accept", "application/json")
 	}
 
-	patData, err := os.ReadFile(os.ExpandEnv(patFile))
-	if err != nil {
-		return "", http.StatusBadRequest, err
-	}
-
-	patStr := strings.TrimSpace(string(patData))
-
 	req.Header.Set("Authorization", "Bearer "+patStr)
 
 	if os.Getenv("DEBUG") == "1" {
@@ -80,7 +72,7 @@ func (c *Client) ListJobs(patFile string, owner string, staff bool, json bool) (
 	return string(body), res.StatusCode, nil
 }
 
-func (c *Client) ListRunners(patFile string, owner string, staff bool, json bool) (string, int, error) {
+func (c *Client) ListRunners(patStr string, owner string, staff bool, json bool) (string, int, error) {
 
 	u, _ := url.Parse(c.baseURL)
 	u.Path = "/api/v1/runners"
@@ -102,13 +94,6 @@ func (c *Client) ListRunners(patFile string, owner string, staff bool, json bool
 		req.Header.Set("Accept", "application/json")
 	}
 
-	patData, err := os.ReadFile(os.ExpandEnv(patFile))
-	if err != nil {
-		return "", http.StatusBadRequest, err
-	}
-
-	patStr := strings.TrimSpace(string(patData))
-
 	req.Header.Set("Authorization", "Bearer "+patStr)
 
 	if os.Getenv("DEBUG") == "1" {
@@ -138,7 +123,7 @@ func (c *Client) ListRunners(patFile string, owner string, staff bool, json bool
 	return string(body), res.StatusCode, nil
 }
 
-func (c *Client) Repair(patFile string, owner string, staff bool) (string, int, error) {
+func (c *Client) Repair(patStr string, owner string, staff bool) (string, int, error) {
 
 	u, _ := url.Parse(c.baseURL)
 	u.Path = "/api/v1/repair"
@@ -156,13 +141,6 @@ func (c *Client) Repair(patFile string, owner string, staff bool) (string, int, 
 		return "", http.StatusBadRequest, err
 	}
 
-	patData, err := os.ReadFile(os.ExpandEnv(patFile))
-	if err != nil {
-		return "", http.StatusBadRequest, err
-	}
-
-	patStr := strings.TrimSpace(string(patData))
-
 	req.Header.Set("Authorization", "Bearer "+patStr)
 
 	if os.Getenv("DEBUG") == "1" {
@@ -192,7 +170,7 @@ func (c *Client) Repair(patFile string, owner string, staff bool) (string, int, 
 	return string(body), res.StatusCode, nil
 }
 
-func (c *Client) GetLogs(patFile, owner, host, id string, age time.Duration, staff bool) (string, int, error) {
+func (c *Client) GetLogs(patStr, owner, host, id string, age time.Duration, staff bool) (string, int, error) {
 
 	mins := int(age.Minutes())
 
@@ -218,13 +196,6 @@ func (c *Client) GetLogs(patFile, owner, host, id string, age time.Duration, sta
 		return "", http.StatusBadRequest, err
 	}
 
-	patData, err := os.ReadFile(os.ExpandEnv(patFile))
-	if err != nil {
-		return "", http.StatusBadRequest, err
-	}
-
-	patStr := strings.TrimSpace(string(patData))
-
 	req.Header.Set("Authorization", "Bearer "+patStr)
 
 	if os.Getenv("DEBUG") == "1" {
@@ -254,7 +225,7 @@ func (c *Client) GetLogs(patFile, owner, host, id string, age time.Duration, sta
 	return string(body), res.StatusCode, nil
 }
 
-func (c *Client) GetAgentLogs(patFile, owner, host string, age time.Duration, staff bool) (string, int, error) {
+func (c *Client) GetAgentLogs(patStr, owner, host string, age time.Duration, staff bool) (string, int, error) {
 
 	mins := int(age.Minutes())
 
@@ -277,13 +248,6 @@ func (c *Client) GetAgentLogs(patFile, owner, host string, age time.Duration, st
 		return "", http.StatusBadRequest, err
 	}
 
-	patData, err := os.ReadFile(os.ExpandEnv(patFile))
-	if err != nil {
-		return "", http.StatusBadRequest, err
-	}
-
-	patStr := strings.TrimSpace(string(patData))
-
 	req.Header.Set("Authorization", "Bearer "+patStr)
 
 	if os.Getenv("DEBUG") == "1" {
@@ -313,7 +277,7 @@ func (c *Client) GetAgentLogs(patFile, owner, host string, age time.Duration, st
 	return string(body), res.StatusCode, nil
 }
 
-func (c *Client) UpgradeAgent(patFile, owner, host string, force bool, staff bool) (string, int, error) {
+func (c *Client) UpgradeAgent(patStr, owner, host string, force bool, staff bool) (string, int, error) {
 
 	u, _ := url.Parse(c.baseURL)
 	u.Path = "/api/v1/upgrade"
@@ -337,13 +301,6 @@ func (c *Client) UpgradeAgent(patFile, owner, host string, force bool, staff boo
 		return "", http.StatusBadRequest, err
 	}
 
-	patData, err := os.ReadFile(os.ExpandEnv(patFile))
-	if err != nil {
-		return "", http.StatusBadRequest, err
-	}
-
-	patStr := strings.TrimSpace(string(patData))
-
 	req.Header.Set("Authorization", "Bearer "+patStr)
 
 	if os.Getenv("DEBUG") == "1" {
@@ -373,7 +330,7 @@ func (c *Client) UpgradeAgent(patFile, owner, host string, force bool, staff boo
 	return string(body), res.StatusCode, nil
 }
 
-func (c *Client) RestartAgent(patFile, owner, host string, reboot bool, staff bool) (string, int, error) {
+func (c *Client) RestartAgent(patStr, owner, host string, reboot bool, staff bool) (string, int, error) {
 
 	u, _ := url.Parse(c.baseURL)
 	u.Path = "/api/v1/restart"
@@ -396,13 +353,6 @@ func (c *Client) RestartAgent(patFile, owner, host string, reboot bool, staff bo
 	if err != nil {
 		return "", http.StatusBadRequest, err
 	}
-
-	patData, err := os.ReadFile(os.ExpandEnv(patFile))
-	if err != nil {
-		return "", http.StatusBadRequest, err
-	}
-
-	patStr := strings.TrimSpace(string(patData))
 
 	req.Header.Set("Authorization", "Bearer "+patStr)
 

@@ -29,7 +29,8 @@ func makeSshLs() *cobra.Command {
 }
 
 func runSshLsE(cmd *cobra.Command, args []string) error {
-	pat, err := cmd.Flags().GetString("pat")
+
+	pat, err := getPat(cmd)
 	if err != nil {
 		return err
 	}

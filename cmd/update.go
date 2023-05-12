@@ -27,7 +27,7 @@ func makeUpgrade() *cobra.Command {
 }
 
 func runUpgradeE(cmd *cobra.Command, args []string) error {
-	pat, err := cmd.Flags().GetString("pat")
+	pat, err := getPat(cmd)
 	if err != nil {
 		return err
 	}

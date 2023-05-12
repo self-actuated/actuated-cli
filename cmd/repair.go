@@ -25,7 +25,7 @@ func makeRepair() *cobra.Command {
 }
 
 func runRepairE(cmd *cobra.Command, args []string) error {
-	pat, err := cmd.Flags().GetString("pat")
+	pat, err := getPat(cmd)
 	if err != nil {
 		return err
 	}

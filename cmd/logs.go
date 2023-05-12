@@ -28,7 +28,7 @@ func makeLogs() *cobra.Command {
 }
 
 func runLogsE(cmd *cobra.Command, args []string) error {
-	pat, err := cmd.Flags().GetString("pat")
+	pat, err := getPat(cmd)
 	if err != nil {
 		return err
 	}
