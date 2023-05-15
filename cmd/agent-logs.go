@@ -12,8 +12,9 @@ import (
 
 func makeAgentLogs() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "agent-logs",
-		Short: "Fetch logs from the agent's systemd service",
+		Use:     "agent-logs",
+		Short:   "Fetch logs from the agent's systemd service",
+		Aliases: []string{"service-logs"},
 	}
 
 	cmd.RunE = runAgentLogsE
