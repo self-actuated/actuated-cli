@@ -14,6 +14,11 @@ func makeRepair() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "repair",
 		Short: "Schedule additional VMs to repair the build queue",
+		Long: `Schedule additional VMs to repair the build queue.
+Use sparingly, check the build queue to see if there is a need for 
+more VMs to be launched. Then, allow ample time for the new VMs to 
+pick up a job by checking the build queue again for an in_progress
+status.`,
 	}
 
 	cmd.RunE = runRepairE

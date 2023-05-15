@@ -7,8 +7,10 @@ import (
 func makeSSH() *cobra.Command {
 
 	ssh := &cobra.Command{
-		Use:           "ssh",
-		Short:         "Manage SSH sessions",
+		Use:   "ssh",
+		Short: "List and connect to SSH sessions",
+		Long: `List and connect to SSH sessions to explore the environment
+or debug a problem with a build.`,
 		SilenceErrors: true,
 		SilenceUsage:  true,
 	}

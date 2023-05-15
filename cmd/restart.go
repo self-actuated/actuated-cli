@@ -14,6 +14,15 @@ func makeRestart() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "restart",
 		Short: "Forcibly restart the agent by killing it or reboot the machine.",
+		Example: `  # Request the agent to restart
+  # This will drain any running jobs - do a forced upgrade if you want to 
+  # restart gracefully.
+  actuated-cli restart --owner ORG --host HOST
+
+  # Reboot the machine, if the agent is not responding.
+  # This will not drain any running jobs.
+  actuated-cli restart --owner ORG --host HOST --reboot
+`,
 	}
 
 	cmd.RunE = runRestartE

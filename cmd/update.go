@@ -14,6 +14,12 @@ func makeUpgrade() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "upgrade",
 		Short: "Upgrade an agent's kernel and root filesystem",
+		Example: `  # Upgrade the agent if a newer one is available
+  actuated-cli upgrade --owner ORG --host HOST
+  
+  # Force an upgrade, even if on the latest version of the agent
+  actuated-cli upgrade --owner ORG --host HOST --host
+`,
 	}
 
 	cmd.RunE = runUpgradeE

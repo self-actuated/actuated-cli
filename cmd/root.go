@@ -13,8 +13,15 @@ var root *cobra.Command
 func init() {
 
 	root = &cobra.Command{
-		Use:           "actuated-cli",
-		Short:         "The actuated cli",
+		Use:   "actuated-cli",
+		Short: "The official CLI for actuated",
+		Long: `The actuated-cli is for customers and operators to query 
+the status of jobs and servers.
+
+See the project README on GitHub for more:
+
+https://github.com/self-actuated/actuated-cli
+`,
 		SilenceErrors: true,
 		SilenceUsage:  true,
 	}

@@ -19,6 +19,12 @@ func makeSshConnect() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "connect",
 		Short: "Connected to an SSH session",
+		Example: `  # Connect to the first session
+  actuated-cli ssh connect
+
+  # Connect to a specific session
+  actuated-cli ssh connect --host HOST
+`,
 	}
 
 	cmd.RunE = runSshConnectE
