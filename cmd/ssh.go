@@ -13,7 +13,7 @@ func makeSSH() *cobra.Command {
 		SilenceUsage:  true,
 	}
 
-	ssh.AddCommand(makeSshLs())
+	ssh.AddCommand(makeSshList())
 	ssh.AddCommand(makeSshConnect())
 
 	return ssh

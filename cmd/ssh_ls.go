@@ -17,18 +17,19 @@ import (
 
 const SshGw = "https://sshgw.actuated.dev"
 
-func makeSshLs() *cobra.Command {
+func makeSshList() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "ls",
-		Short: "List SSH sessions",
+		Use:     "list",
+		Aliases: []string{"ls"},
+		Short:   "List SSH sessions",
 	}
 
-	cmd.RunE = runSshLsE
+	cmd.RunE = runSshListE
 
 	return cmd
 }
 
-func runSshLsE(cmd *cobra.Command, args []string) error {
+func runSshListE(cmd *cobra.Command, args []string) error {
 
 	pat, err := getPat(cmd)
 	if err != nil {
