@@ -1,5 +1,9 @@
 # actuated-cli
 
+The actuated-cli requires an access token for GitHub and is designed to be used by a user with access to the actuated dashboard.
+
+Most of the operations on the actuated dashboard are available as CLI commands.
+
 ## Installation
 
 Download the latest release from the [releases page](https://github.com/self-actuated/actuated-cli/releases).
@@ -11,6 +15,12 @@ export ACTUATED_URL=https://example.com
 ```
 
 Or, run this command in a shell before executing any of the CLI commands.
+
+## Obtain a token from GitHub for your own account
+
+Obtain a Personal Access Token (PAT) from [https://github.com/settings/tokens](https://github.com/settings/tokens)
+
+Save it as for example: `~/pat.txt`
 
 ## View queued jobs
 
