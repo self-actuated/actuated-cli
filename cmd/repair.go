@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -67,8 +68,17 @@ func runRepairE(cmd *cobra.Command, args []string) error {
 
 	fmt.Printf("Repair requested for %s, status: %d\n", owner, status)
 	if strings.TrimSpace(res) != "" {
-		fmt.Printf("Response: %s\n", res)
+		repairRes := RepairRes{}
+		if err := json.Unmarshal([]byte(res), &repairRes); err != nil {
+			return err
+		}
+
+		fmt.Printf("Requeued VMs: %d\n", repairRes.VMs)
 	}
 
 	return nil
+}
+
+type RepairRes struct {
+	VMs int `json:"vms"`
 }
