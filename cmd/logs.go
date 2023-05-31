@@ -13,7 +13,16 @@ import (
 func makeLogs() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "logs",
-		Short: "Fetch logs from the agent's systemd service",
+		Short: "Fetch logs from VMs",
+		Long: `Fetch logs from a specific VM or a all VMs over a 
+range of time.`,
+
+		Example: `# Logs from all VMs over the past 15 minutes
+actuated-cli logs --owner=OWNER --host=HOST --age=15m
+
+# All logs from a specific VM using its hostname as the --id
+actuated-cli logs --owner=OWNER --host=HOST --id=ID
+`,
 	}
 
 	cmd.RunE = runLogsE
