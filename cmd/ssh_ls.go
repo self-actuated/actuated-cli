@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/url"
+	"sort"
 	"strconv"
 	"time"
 
@@ -68,7 +69,7 @@ func runSshListE(cmd *cobra.Command, args []string) error {
 	buf := bytes.NewBuffer(nil)
 	table := tablewriter.NewWriter(buf)
 
-	table.SetHeader([]string{"Actor", "Hostname", "RX", "TX", "Connected"})
+	table.SetHeader([]string{"No.", "Actor", "Hostname", "RX", "TX", "Connected"})
 
 	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
 	table.SetCenterSeparator("|")
@@ -79,18 +80,28 @@ func runSshListE(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	onlyActor := []sshSession{}
 	for _, session := range sessions {
-		if login == session.Actor {
-			connectedAt, _ := time.Parse(time.RFC3339, session.ConnectedAt)
-			since := time.Since(connectedAt).Round(time.Second)
-			table.Append([]string{
-				session.Actor,
-				session.Hostname,
-				strconv.Itoa(session.Rx),
-				strconv.Itoa(session.Tx),
-				since.String(),
-			})
+		if session.Actor == login {
+			onlyActor = append(onlyActor, session)
 		}
+	}
+
+	sort.Slice(onlyActor, func(i, j int) bool {
+		return onlyActor[i].ConnectedAt > onlyActor[j].ConnectedAt
+	})
+
+	for i, session := range onlyActor {
+		connectedAt, _ := time.Parse(time.RFC3339, session.ConnectedAt)
+		since := time.Since(connectedAt).Round(time.Second)
+		table.Append([]string{
+			strconv.Itoa(i + 1),
+			session.Actor,
+			session.Hostname,
+			strconv.Itoa(session.Rx),
+			strconv.Itoa(session.Tx),
+			since.String(),
+		})
 	}
 
 	table.Render()

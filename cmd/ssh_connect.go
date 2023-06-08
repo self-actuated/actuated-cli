@@ -8,7 +8,9 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/google/go-github/v52/github"
 	"github.com/spf13/cobra"
@@ -23,13 +25,12 @@ func makeSshConnect() *cobra.Command {
   actuated-cli ssh connect
 
   # Connect to a specific session
-  actuated-cli ssh connect --host HOST
+  actuated-cli ssh connect HOST
 `,
 	}
 
 	cmd.RunE = runSshConnectE
 
-	cmd.Flags().String("host", "", "Host to connect to or leave blank to connect to the first")
 	cmd.Flags().Bool("print", false, "Print the SSH command instead of running it")
 
 	return cmd
@@ -46,9 +47,16 @@ func runSshConnectE(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	host, err := cmd.Flags().GetString("host")
-	if err != nil {
-		return err
+	host := ""
+	hostIndex := 0
+	useIndex := false
+
+	if len(args) > 0 {
+		host = args[0]
+		if i, err := strconv.Atoi(host); err == nil {
+			useIndex = true
+			hostIndex = i
+		}
 	}
 
 	ctx := context.Background()
@@ -85,22 +93,42 @@ func runSshConnectE(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if len(sessions) == 0 {
+	onlyActor := []sshSession{}
+	for _, session := range sessions {
+		if session.Actor == login {
+			onlyActor = append(onlyActor, session)
+		}
+	}
+
+	sort.Slice(onlyActor, func(i, j int) bool {
+		return onlyActor[i].ConnectedAt > onlyActor[j].ConnectedAt
+	})
+
+	if len(onlyActor) == 0 {
 		return fmt.Errorf("no sessions found")
 	}
 
 	var found *sshSession
-	for _, session := range sessions {
-		if session.Actor != login {
-			continue
-		}
-
+	for i, session := range onlyActor {
 		if host == "" {
 			found = &session
 			break
 		} else if session.Hostname == host {
 			found = &session
 			break
+		} else if useIndex && hostIndex == i+1 {
+			found = &session
+			break
+		}
+	}
+
+	// Try a fuzzy match
+	if found == nil {
+		for _, session := range onlyActor {
+			if strings.HasPrefix(session.Hostname, host) {
+				found = &session
+				break
+			}
 		}
 	}
 
@@ -111,7 +139,7 @@ func runSshConnectE(cmd *cobra.Command, args []string) error {
 	us, _ := url.Parse(SshGw)
 
 	if printOnly {
-		fmt.Printf("ssh -p %d runner@%s\n", found.Port, us.Host)
+		fmt.Printf("ssh -p %d ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null runner@%s\n", found.Port, us.Host)
 		return nil
 	}
 

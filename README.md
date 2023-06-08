@@ -45,8 +45,12 @@ actuated-cli ssh \
     --token ~/reader.txt \
     ssh ls
 
-| ACTOR | HOSTNAME | RX | TX | CONNECTED |
-|-------|----------|----|----|-----------|
+Hosts are ordered by the connected time.
+
+| NO  |   ACTOR   |                 HOSTNAME                 |  RX   |  TX   | CONNECTED |
+|-----|-----------|------------------------------------------|-------|-------|-----------|
+|   1 | alexellis | 6aafd53144e2f00ef5cd2c16681eeab4712561a6 | 13679 | 10371 | 6m4s      |
+|   2 | alexellis | fv-az268-245                             | 23124 | 13828 | 12m2s     |
 ```
 
 ## Connect to an SSH session
@@ -59,12 +63,28 @@ actuated-cli ssh \
     ssh connect
 ```
 
+Connected to the second session in the list:
+
+```bash
+actuated-cli ssh \
+    --token ~/reader.txt \
+    ssh connect 2
+```
+
 Connect to a specific session by hostname:
 
 ```bash
 actuated-cli ssh \
     --token ~/reader.txt \
-    ssh connect --host runner1
+    ssh connect runner1
+```
+
+Connect to a specific session with a host prefix:
+
+```bash
+actuated-cli ssh \
+    --token ~/reader.txt \
+    ssh connect 6aafd
 ```
 
 ## Check the logs of VMs
