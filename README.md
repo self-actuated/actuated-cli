@@ -44,6 +44,7 @@ actuated-cli runners \
 actuated-cli ssh \
     --token ~/reader.txt \
     ssh ls
+```
 
 Hosts are ordered by the connected time.
 
