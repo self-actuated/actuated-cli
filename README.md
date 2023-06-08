@@ -47,6 +47,7 @@ actuated-cli ssh \
 
 Hosts are ordered by the connected time.
 
+```bash
 | NO  |   ACTOR   |                 HOSTNAME                 |  RX   |  TX   | CONNECTED |
 |-----|-----------|------------------------------------------|-------|-------|-----------|
 |   1 | alexellis | 6aafd53144e2f00ef5cd2c16681eeab4712561a6 | 13679 | 10371 | 6m4s      |
