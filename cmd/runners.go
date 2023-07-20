@@ -47,10 +47,6 @@ func runRunnersE(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if len(owner) == 0 {
-		return fmt.Errorf("owner is required")
-	}
-
 	if len(pat) == 0 {
 		return fmt.Errorf("pat is required")
 	}
@@ -68,7 +64,6 @@ func runRunnersE(cmd *cobra.Command, args []string) error {
 	}
 
 	if requestJson {
-
 		var prettyJSON bytes.Buffer
 		err := json.Indent(&prettyJSON, []byte(res), "", "  ")
 		if err != nil {
