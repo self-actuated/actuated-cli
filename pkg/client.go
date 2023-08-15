@@ -3,6 +3,7 @@ package pkg
 import (
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -87,6 +88,7 @@ func (c *Client) ListRunners(patStr string, owner string, staff bool, json bool)
 
 	if len(owner) > 0 {
 		q.Set("owner", owner)
+		log.Printf("Requesting runners for owner %s", owner)
 	}
 
 	u.RawQuery = q.Encode()

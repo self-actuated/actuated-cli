@@ -36,10 +36,10 @@ func makeJobs() *cobra.Command {
 
 func runJobsE(cmd *cobra.Command, args []string) error {
 
-	if len(args) < 1 {
-		return fmt.Errorf("give an owner as an argument")
+	var owner string
+	if len(args) == 1 {
+		owner = strings.TrimSpace(args[0])
 	}
-	owner := strings.TrimSpace(args[0])
 
 	pat, err := getPat(cmd)
 	if err != nil {
