@@ -20,7 +20,6 @@ func makeJobs() *cobra.Command {
 	cmd.RunE = runJobsE
 
 	cmd.Flags().StringP("owner", "o", "", "List jobs owned by this user")
-	cmd.Flags().BoolP("staff", "s", false, "List as a staff user")
 	cmd.Flags().Bool("json", false, "Request output in JSON format")
 
 	return cmd

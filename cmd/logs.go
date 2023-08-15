@@ -29,7 +29,6 @@ actuated-cli logs --owner=OWNER --host=HOST --id=ID
 
 	cmd.Flags().StringP("owner", "o", "", "List logs owned by this user")
 	cmd.Flags().String("host", "", "Host or name of server as displayed in actuated")
-	cmd.Flags().BoolP("staff", "s", false, "List as a staff user")
 	cmd.Flags().String("id", "", "ID variable for a specific runner VM hostname")
 	cmd.Flags().DurationP("age", "a", time.Minute*15, "Age of logs to fetch")
 

@@ -18,15 +18,20 @@ Or, run this command in a shell before executing any of the CLI commands.
 
 ## Obtain a token from GitHub for your own account
 
-Obtain a Personal Access Token (PAT) from [https://github.com/settings/tokens](https://github.com/settings/tokens)
+You can perform this step using GitHub's Device Flow:
 
-Save it as for example: `~/pat.txt`
+```bash
+actuated-cli auth
+```
+
+Or you can obtain a Personal Access Token (PAT) manually from [https://github.com/settings/tokens](https://github.com/settings/tokens)
+
+In either case, saving the token to `$HOME/.actuated/PAT` will mean you can avoid having to pass in the `--token` flag to each command.
 
 ## View queued jobs
 
 ```bash
 actuated-cli jobs \
-    --token ~/reader.txt \
     --owner actuated-samples
 ```
 
@@ -34,7 +39,6 @@ actuated-cli jobs \
 
 ```bash
 actuated-cli runners \
-    --token ~/reader.txt \
     --owner actuated-samples
 ```
 
@@ -42,7 +46,6 @@ actuated-cli runners \
 
 ```bash
 actuated-cli ssh \
-    --token ~/reader.txt \
     ssh ls
 ```
 
@@ -61,7 +64,6 @@ Connect to the first available session from your account:
 
 ```bash
 actuated-cli ssh \
-    --token ~/reader.txt \
     ssh connect
 ```
 
@@ -69,7 +71,6 @@ Connected to the second session in the list:
 
 ```bash
 actuated-cli ssh \
-    --token ~/reader.txt \
     ssh connect 2
 ```
 
@@ -77,7 +78,6 @@ Connect to a specific session by hostname:
 
 ```bash
 actuated-cli ssh \
-    --token ~/reader.txt \
     ssh connect runner1
 ```
 
@@ -85,7 +85,6 @@ Connect to a specific session with a host prefix:
 
 ```bash
 actuated-cli ssh \
-    --token ~/reader.txt \
     ssh connect 6aafd
 ```
 
@@ -100,7 +99,6 @@ View the serial console and systemd output of the VMs launched on a specific ser
 
 ```bash
 actuated-cli logs \
-    --token ~/reader.txt \
     --host runner1 \
     --owner actuated-samples \
     --age 15m
@@ -112,7 +110,6 @@ You can also get the logs for a specific runner by using the `--id` flag.
 
 ```bash
 actuated-cli logs \
-    --token ~/reader.txt \
     --host runner1 \
     --owner actuated-samples \
     --id ea5c285282620927689d90af3cfa3be2d5e2d004
@@ -126,7 +123,6 @@ View VM launch times, etc.
 
 ```bash
 actuated-cli agent-logs \
-    --token ~/reader.txt \
     --host runner1 \
     --owner actuated-samples \
     --age 15m
@@ -142,7 +138,6 @@ Run with sparingly because it will launch one VM per job queued.
 
 ```bash
 actuated-cli repair \
-    --token ~/reader.txt \
     --owner actuated-samples
 ```
 
@@ -152,7 +147,6 @@ Restart the agent by sending a `kill -9` signal:
 
 ```bash
 actuated-cli restart \
-    --token ~/reader.txt \
     --owner actuated-samples \
     --host runner1
 ```
@@ -163,7 +157,6 @@ Reboot the machine, if in an unrecoverable position:
 
 ```bash
 actuated-cli restart \
-    --token ~/reader.txt \
     --owner actuated-samples \
     --host runner1 \
     --reboot
