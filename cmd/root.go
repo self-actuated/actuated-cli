@@ -18,6 +18,8 @@ func init() {
 		Long: `The actuated-cli is for customers and operators to query 
 the status of jobs and servers.
 
+Run "actuated-cli auth" to get a Personal Access Token from GitHub
+
 See the project README on GitHub for more:
 
 https://github.com/self-actuated/actuated-cli
@@ -27,7 +29,7 @@ https://github.com/self-actuated/actuated-cli
 	}
 
 	root.PersistentFlags().String("token-value", "", "Personal Access Token")
-	root.PersistentFlags().StringP("token", "t", "", "File to read for Personal Access Token")
+	root.PersistentFlags().StringP("token", "t", "$HOME/.actuated/PAT", "File to read for Personal Access Token")
 	root.PersistentFlags().Bool("staff", false, "Execute the command as an actuated staff member")
 
 	root.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
@@ -69,14 +71,16 @@ func getPat(cmd *cobra.Command) (string, error) {
 			return "", err
 		}
 		pat = v
-	} else if cmd.Flags().Changed("token") {
+	} else {
 		v, err := cmd.Flags().GetString("token")
 		if err != nil {
 			return "", err
 		}
-		patFile = v
-	} else {
-		patFile = os.ExpandEnv("$HOME/.actuated/PAT")
+
+		if len(v) == 0 {
+			return "", fmt.Errorf("give --token or --token-value")
+		}
+		patFile = os.ExpandEnv(v)
 	}
 
 	if len(patFile) > 0 {
