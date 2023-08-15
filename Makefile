@@ -1,6 +1,10 @@
 SOURCE_DIRS = main.go cmd pkg
 export GO111MODULE=on
-export LDFLAGS="-s -w"
+
+Version := $(shell git describe --tags --dirty)
+GitCommit := $(shell git rev-parse HEAD)
+
+LDFLAGS := "-s -w -X github.com/self-actuated/actuated-cli/pkg.Version=$(Version) -X github.com/self-actuated/actuated-cli/pkg.GitCommit=$(GitCommit)"
 
 .PHONY: all
 all: gofmt test build dist
