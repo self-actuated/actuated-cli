@@ -36,17 +36,18 @@ status.`,
 }
 
 func runRepairE(cmd *cobra.Command, args []string) error {
+
+	var owner string
+	if len(args) == 1 {
+		owner = strings.TrimSpace(args[0])
+	}
+
 	pat, err := getPat(cmd)
 	if err != nil {
 		return err
 	}
 
 	staff, err := cmd.Flags().GetBool("staff")
-	if err != nil {
-		return err
-	}
-
-	owner, err := cmd.Flags().GetString("owner")
 	if err != nil {
 		return err
 	}
