@@ -31,7 +31,10 @@ func (c *Client) ListJobs(patStr string, owner string, staff bool, json bool) (s
 		q.Set("staff", "1")
 	}
 
-	q.Set("owners", owner)
+	if len(owner) > 0 {
+		q.Set("owners", owner)
+	}
+
 	u.RawQuery = q.Encode()
 
 	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
@@ -82,7 +85,10 @@ func (c *Client) ListRunners(patStr string, owner string, staff bool, json bool)
 		q.Set("staff", "1")
 	}
 
-	q.Set("owner", owner)
+	if len(owner) > 0 {
+		q.Set("owner", owner)
+	}
+
 	u.RawQuery = q.Encode()
 
 	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
