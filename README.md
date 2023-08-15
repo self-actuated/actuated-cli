@@ -31,15 +31,13 @@ In either case, saving the token to `$HOME/.actuated/PAT` will mean you can avoi
 ## View queued jobs
 
 ```bash
-actuated-cli jobs \
-    --owner actuated-samples
+actuated-cli jobs actuated-samples
 ```
 
 ## View runners for organization
 
 ```bash
-actuated-cli runners \
-    --owner actuated-samples
+actuated-cli runners actuated-samples
 ```
 
 ## View SSH sessions available:
@@ -99,9 +97,9 @@ View the serial console and systemd output of the VMs launched on a specific ser
 
 ```bash
 actuated-cli logs \
-    --host runner1 \
     --owner actuated-samples \
-    --age 15m
+    --age 15m \
+    server1
 ```
 
 The age is specified as a Go duration i.e. `60m` or `24h`.
@@ -110,9 +108,9 @@ You can also get the logs for a specific runner by using the `--id` flag.
 
 ```bash
 actuated-cli logs \
-    --host runner1 \
     --owner actuated-samples \
-    --id ea5c285282620927689d90af3cfa3be2d5e2d004
+    --id ea5c285282620927689d90af3cfa3be2d5e2d004 \
+    --host server1
 ```
 
 ## Check the logs of the actuated agent service
@@ -123,9 +121,9 @@ View VM launch times, etc.
 
 ```bash
 actuated-cli agent-logs \
-    --host runner1 \
     --owner actuated-samples \
-    --age 15m
+    --age 15m \
+    --host server1
 ```
 
 ## Schedule a repair to re-queue jobs
@@ -138,7 +136,7 @@ Run with sparingly because it will launch one VM per job queued.
 
 ```bash
 actuated-cli repair \
-    --owner actuated-samples
+    actuated-samples
 ```
 
 ## Rescue a remote server
@@ -148,7 +146,7 @@ Restart the agent by sending a `kill -9` signal:
 ```bash
 actuated-cli restart \
     --owner actuated-samples \
-    --host runner1
+    server1
 ```
 
 Any inflight VMs will be killed, see also: `actuated-cli update --force`
@@ -158,8 +156,8 @@ Reboot the machine, if in an unrecoverable position:
 ```bash
 actuated-cli restart \
     --owner actuated-samples \
-    --host runner1 \
-    --reboot
+    --reboot \
+    server1
 ```
 
 Use with caution, since this may not perform a safe and clean shutdown.

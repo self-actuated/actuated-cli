@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/self-actuated/actuated-cli/pkg"
 	"github.com/spf13/cobra"
@@ -15,28 +16,37 @@ func makeJobs() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "jobs",
 		Short: "List jobs in the build queue",
+		Example: `  # Check queued and in_progress jobs for an organisation
+  actuated-cli jobs ORG
+  
+  # Get the same result, but in JSON format
+  actuated-cli jobs ORG --json
+  
+  # Check queued and in_progress jobs for a customer
+  actuated-cli jobs --staff CUSTOMER
+`,
 	}
 
 	cmd.RunE = runJobsE
 
-	cmd.Flags().StringP("owner", "o", "", "List jobs owned by this user")
 	cmd.Flags().Bool("json", false, "Request output in JSON format")
 
 	return cmd
 }
 
 func runJobsE(cmd *cobra.Command, args []string) error {
+
+	if len(args) < 1 {
+		return fmt.Errorf("give an owner as an argument")
+	}
+	owner := strings.TrimSpace(args[0])
+
 	pat, err := getPat(cmd)
 	if err != nil {
 		return err
 	}
 
 	staff, err := cmd.Flags().GetBool("staff")
-	if err != nil {
-		return err
-	}
-
-	owner, err := cmd.Flags().GetString("owner")
 	if err != nil {
 		return err
 	}

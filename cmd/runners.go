@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/self-actuated/actuated-cli/pkg"
 	"github.com/spf13/cobra"
@@ -14,12 +15,20 @@ import (
 func makeRunners() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "runners",
-		Short: "List runners",
+		Short: "List runners for an organisation",
+		Example: ` # List runners for a given organisation
+  actuated-cli runners OWNER
+  
+  # List runners for all customers
+  actuated-cli runners --staff OWNER
+
+  # List runners in JSON format
+  actuated-cli runners --json OWNER
+`,
 	}
 
 	cmd.RunE = runRunnersE
 
-	cmd.Flags().StringP("owner", "o", "", "List runners owned by this user")
 	cmd.Flags().BoolP("staff", "s", false, "List staff runners")
 	cmd.Flags().Bool("json", false, "Request output in JSON format")
 
@@ -27,17 +36,18 @@ func makeRunners() *cobra.Command {
 }
 
 func runRunnersE(cmd *cobra.Command, args []string) error {
+
+	if len(args) < 1 {
+		return fmt.Errorf("give an owner as an argument")
+	}
+	owner := strings.TrimSpace(args[0])
+
 	pat, err := getPat(cmd)
 	if err != nil {
 		return err
 	}
 
 	staff, err := cmd.Flags().GetBool("staff")
-	if err != nil {
-		return err
-	}
-
-	owner, err := cmd.Flags().GetString("owner")
 	if err != nil {
 		return err
 	}

@@ -16,10 +16,10 @@ func makeUpgrade() *cobra.Command {
 		Use:   "upgrade",
 		Short: "Upgrade an agent's kernel and root filesystem",
 		Example: `  # Upgrade the agent if a newer one is available
-  actuated-cli upgrade --owner ORG --host HOST
+  actuated-cli upgrade --owner ORG HOST
   
   # Force an upgrade, even if on the latest version of the agent
-  actuated-cli upgrade --owner ORG --host HOST --host
+  actuated-cli upgrade --owner ORG --force HOST
 `,
 	}
 
@@ -28,13 +28,18 @@ func makeUpgrade() *cobra.Command {
 	cmd.Flags().StringP("owner", "o", "", "Owner")
 	cmd.Flags().BoolP("staff", "s", false, "Staff flag")
 	cmd.Flags().BoolP("force", "f", false, "Force upgrade")
-	cmd.Flags().String("host", "", "Host to upgrade")
 	cmd.Flags().BoolP("all", "a", false, "Upgrade all hosts instead of giving --host")
 
 	return cmd
 }
 
 func runUpgradeE(cmd *cobra.Command, args []string) error {
+
+	if len(args) < 1 {
+		return fmt.Errorf("specify the host as an argument")
+	}
+	host := strings.TrimSpace(args[0])
+
 	pat, err := getPat(cmd)
 	if err != nil {
 		return err
@@ -51,11 +56,6 @@ func runUpgradeE(cmd *cobra.Command, args []string) error {
 	}
 
 	force, err := cmd.Flags().GetBool("force")
-	if err != nil {
-		return err
-	}
-
-	host, err := cmd.Flags().GetString("host")
 	if err != nil {
 		return err
 	}

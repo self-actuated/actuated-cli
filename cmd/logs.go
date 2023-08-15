@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/self-actuated/actuated-cli/pkg"
@@ -18,17 +19,16 @@ func makeLogs() *cobra.Command {
 range of time.`,
 
 		Example: `# Logs from all VMs over the past 15 minutes
-actuated-cli logs --owner=OWNER --host=HOST --age=15m
+actuated-cli logs --owner=OWNER --age=15m HOST
 
 # All logs from a specific VM using its hostname as the --id
-actuated-cli logs --owner=OWNER --host=HOST --id=ID
+actuated-cli logs --owner=OWNER --id=ID HOST
 `,
 	}
 
 	cmd.RunE = runLogsE
 
 	cmd.Flags().StringP("owner", "o", "", "List logs owned by this user")
-	cmd.Flags().String("host", "", "Host or name of server as displayed in actuated")
 	cmd.Flags().String("id", "", "ID variable for a specific runner VM hostname")
 	cmd.Flags().DurationP("age", "a", time.Minute*15, "Age of logs to fetch")
 
@@ -36,6 +36,11 @@ actuated-cli logs --owner=OWNER --host=HOST --id=ID
 }
 
 func runLogsE(cmd *cobra.Command, args []string) error {
+	if len(args) < 1 {
+		return fmt.Errorf("specify the host as an argument")
+	}
+	host := strings.TrimSpace(args[0])
+
 	pat, err := getPat(cmd)
 	if err != nil {
 		return err
@@ -56,12 +61,10 @@ func runLogsE(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	host, err := cmd.Flags().GetString("host")
+	id, err := cmd.Flags().GetString("id")
 	if err != nil {
 		return err
 	}
-
-	id, err := cmd.Flags().GetString("id")
 
 	if len(host) == 0 {
 		return fmt.Errorf("host is required")

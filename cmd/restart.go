@@ -17,11 +17,11 @@ func makeRestart() *cobra.Command {
 		Example: `  # Request the agent to restart
   # This will drain any running jobs - do a forced upgrade if you want to 
   # restart gracefully.
-  actuated-cli restart --owner ORG --host HOST
+  actuated-cli restart --owner ORG HOST
 
   # Reboot the machine, if the agent is not responding.
   # This will not drain any running jobs.
-  actuated-cli restart --owner ORG --host HOST --reboot
+  actuated-cli restart --owner ORG --reboot HOST
 `,
 	}
 
@@ -30,12 +30,16 @@ func makeRestart() *cobra.Command {
 	cmd.Flags().StringP("owner", "o", "", "Owner")
 	cmd.Flags().BoolP("staff", "s", false, "Staff flag")
 	cmd.Flags().BoolP("reboot", "r", false, "Reboot the machine instead of just restarting the service")
-	cmd.Flags().String("host", "", "Host to restart")
 
 	return cmd
 }
 
 func runRestartE(cmd *cobra.Command, args []string) error {
+	if len(args) < 1 {
+		return fmt.Errorf("specify the host as an argument")
+	}
+	host := strings.TrimSpace(args[0])
+
 	pat, err := getPat(cmd)
 	if err != nil {
 		return err
@@ -52,11 +56,6 @@ func runRestartE(cmd *cobra.Command, args []string) error {
 	}
 
 	reboot, err := cmd.Flags().GetBool("reboot")
-	if err != nil {
-		return err
-	}
-
-	host, err := cmd.Flags().GetString("host")
 	if err != nil {
 		return err
 	}

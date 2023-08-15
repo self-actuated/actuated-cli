@@ -20,11 +20,16 @@ Use sparingly, check the build queue to see if there is a need for
 more VMs to be launched. Then, allow ample time for the new VMs to 
 pick up a job by checking the build queue again for an in_progress
 status.`,
+		Example: `  ## Launch VMs for queued jobs in a given organisation
+  actuated repair OWNER
+
+  ## Launch VMs for queued jobs in a given organisation for a customer
+  actuated repair --staff OWNER
+`,
 	}
 
 	cmd.RunE = runRepairE
 
-	cmd.Flags().StringP("owner", "o", "", "List repair owned by this user")
 	cmd.Flags().BoolP("staff", "s", false, "List staff repair")
 
 	return cmd

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/self-actuated/actuated-cli/pkg"
@@ -12,21 +13,31 @@ import (
 
 func makeAgentLogs() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "agent-logs",
-		Short:   "Fetch logs from the agent's systemd service",
+		Use:   "agent-logs",
+		Short: "Fetch logs from the agent's systemd service",
+		Example: `  # Latest logs for a given host:
+  actuated agent-logs --owner OWNER HOST
+
+  # Latest logs for a given time-range
+  actuated agent-logs --owner OWNER --age 1h HOST
+  `,
 		Aliases: []string{"service-logs"},
 	}
 
 	cmd.RunE = runAgentLogsE
 
 	cmd.Flags().StringP("owner", "o", "", "Owner for the logs")
-	cmd.Flags().String("host", "", "Host or name of server as displayed in actuated")
 	cmd.Flags().DurationP("age", "a", time.Minute*15, "Age of logs to fetch")
 
 	return cmd
 }
 
 func runAgentLogsE(cmd *cobra.Command, args []string) error {
+	if len(args) < 1 {
+		return fmt.Errorf("specify the host as an argument")
+	}
+	host := strings.TrimSpace(args[0])
+
 	pat, err := getPat(cmd)
 	if err != nil {
 		return err
@@ -47,10 +58,6 @@ func runAgentLogsE(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	host, err := cmd.Flags().GetString("host")
-	if err != nil {
-		return err
-	}
 	if len(host) == 0 {
 		return fmt.Errorf("host is required")
 	}
