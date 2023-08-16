@@ -43,8 +43,7 @@ actuated-cli runners actuated-samples
 ## View SSH sessions available:
 
 ```bash
-actuated-cli ssh \
-    ssh ls
+actuated-cli ssh ls
 ```
 
 Hosts are ordered by the connected time.
@@ -61,29 +60,25 @@ Hosts are ordered by the connected time.
 Connect to the first available session from your account:
 
 ```bash
-actuated-cli ssh \
-    ssh connect
+actuated-cli ssh connect
 ```
 
 Connected to the second session in the list:
 
 ```bash
-actuated-cli ssh \
-    ssh connect 2
+actuated-cli ssh connect 2
 ```
 
 Connect to a specific session by hostname:
 
 ```bash
-actuated-cli ssh \
-    ssh connect runner1
+actuated-cli ssh connect runner1
 ```
 
 Connect to a specific session with a host prefix:
 
 ```bash
-actuated-cli ssh \
-    ssh connect 6aafd
+actuated-cli ssh connect 6aafd
 ```
 
 ## Check the logs of VMs
@@ -110,7 +105,7 @@ You can also get the logs for a specific runner by using the `--id` flag.
 actuated-cli logs \
     --owner actuated-samples \
     --id ea5c285282620927689d90af3cfa3be2d5e2d004 \
-    --host server1
+    server1
 ```
 
 ## Check the logs of the actuated agent service
@@ -123,7 +118,7 @@ View VM launch times, etc.
 actuated-cli agent-logs \
     --owner actuated-samples \
     --age 15m \
-    --host server1
+    server1
 ```
 
 ## Schedule a repair to re-queue jobs
