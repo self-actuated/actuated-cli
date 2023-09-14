@@ -28,7 +28,6 @@ func makeRestart() *cobra.Command {
 	cmd.RunE = runRestartE
 
 	cmd.Flags().StringP("owner", "o", "", "Owner")
-	cmd.Flags().BoolP("staff", "s", false, "Staff flag")
 	cmd.Flags().BoolP("reboot", "r", false, "Reboot the machine instead of just restarting the service")
 
 	return cmd

@@ -29,7 +29,6 @@ func makeRunners() *cobra.Command {
 
 	cmd.RunE = runRunnersE
 
-	cmd.Flags().BoolP("staff", "s", false, "List staff runners")
 	cmd.Flags().Bool("json", false, "Request output in JSON format")
 
 	return cmd

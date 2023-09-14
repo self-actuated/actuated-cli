@@ -26,7 +26,6 @@ func makeUpgrade() *cobra.Command {
 	cmd.RunE = runUpgradeE
 
 	cmd.Flags().StringP("owner", "o", "", "Owner")
-	cmd.Flags().BoolP("staff", "s", false, "Staff flag")
 	cmd.Flags().BoolP("force", "f", false, "Force upgrade")
 	cmd.Flags().BoolP("all", "a", false, "Upgrade all hosts instead of giving --host")
 

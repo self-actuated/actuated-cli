@@ -30,8 +30,6 @@ status.`,
 
 	cmd.RunE = runRepairE
 
-	cmd.Flags().BoolP("staff", "s", false, "List staff repair")
-
 	return cmd
 }
 
