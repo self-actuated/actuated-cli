@@ -34,10 +34,19 @@ func makeUpgrade() *cobra.Command {
 
 func runUpgradeE(cmd *cobra.Command, args []string) error {
 
-	if len(args) < 1 {
+	allHosts, err := cmd.Flags().GetBool("all")
+	if err != nil {
+		return err
+	}
+
+	if len(args) < 1 && !allHosts {
 		return fmt.Errorf("specify the host as an argument")
 	}
-	host := strings.TrimSpace(args[0])
+
+	var host string
+	if !allHosts {
+		host = strings.TrimSpace(args[0])
+	}
 
 	pat, err := getPat(cmd)
 	if err != nil {
@@ -55,11 +64,6 @@ func runUpgradeE(cmd *cobra.Command, args []string) error {
 	}
 
 	force, err := cmd.Flags().GetBool("force")
-	if err != nil {
-		return err
-	}
-
-	allHosts, err := cmd.Flags().GetBool("all")
 	if err != nil {
 		return err
 	}
