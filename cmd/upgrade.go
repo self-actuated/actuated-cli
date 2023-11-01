@@ -73,9 +73,9 @@ func runUpgradeE(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("--all or --host is required")
 	}
 
-	// if len(owner) == 0 {
-	// 	return fmt.Errorf("owner is required")
-	// }
+	if !allHosts && len(owner) == 0 {
+		return fmt.Errorf("owner is required")
+	}
 
 	if len(pat) == 0 {
 		return fmt.Errorf("pat is required")
@@ -98,23 +98,21 @@ func runUpgradeE(cmd *cobra.Command, args []string) error {
 		if err := json.Unmarshal([]byte(hosts), &hostsList); err != nil {
 			return err
 		}
-		reachableHosts := []Host{}
 
-		for _, h := range hostsList {
-			reachableHosts = append(reachableHosts, h)
+		if len(hostsList) == 0 {
+
+			return fmt.Errorf("no hosts found")
 		}
-
-		if len(reachableHosts) == 0 {
-			return fmt.Errorf("no reachable hosts found")
-		}
-		upgradeHosts = reachableHosts
-
+		upgradeHosts = hostsList
 	} else {
+
+		// AE: TODO call ListRunners to determine the values for: Reachable and Status.
 		upgradeHosts = []Host{
 			{
 				Name:      host,
 				Customer:  owner,
 				Reachable: true,
+				Status:    "running",
 			},
 		}
 	}
