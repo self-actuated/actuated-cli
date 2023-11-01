@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/self-actuated/actuated-cli/pkg"
 	"github.com/spf13/cobra"
@@ -72,9 +73,9 @@ func runUpgradeE(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("--all or --host is required")
 	}
 
-	if len(owner) == 0 {
-		return fmt.Errorf("owner is required")
-	}
+	// if len(owner) == 0 {
+	// 	return fmt.Errorf("owner is required")
+	// }
 
 	if len(pat) == 0 {
 		return fmt.Errorf("pat is required")
@@ -100,9 +101,7 @@ func runUpgradeE(cmd *cobra.Command, args []string) error {
 		reachableHosts := []Host{}
 
 		for _, h := range hostsList {
-			if h.Reachable {
-				reachableHosts = append(reachableHosts, h)
-			}
+			reachableHosts = append(reachableHosts, h)
 		}
 
 		if len(reachableHosts) == 0 {
@@ -113,29 +112,39 @@ func runUpgradeE(cmd *cobra.Command, args []string) error {
 	} else {
 		upgradeHosts = []Host{
 			{
-				Name:     host,
-				Customer: owner,
+				Name:      host,
+				Customer:  owner,
+				Reachable: true,
 			},
 		}
 	}
 
 	for _, h := range upgradeHosts {
+		st := time.Now()
+		fmt.Printf("Upgrading: %s (%s)\n", h.Name, h.Customer)
 
-		fmt.Printf("Upgrading: %s for: %s\n", h.Name, h.Customer)
-		res, status, err := c.UpgradeAgent(pat, h.Customer, h.Name, force, staff)
-		if err != nil {
-			return err
-		}
+		if !h.Reachable {
+			fmt.Printf("Can't upgrade: %s (%s), not reachable\n", h.Name, h.Customer)
+		} else if h.Status != "running" {
+			fmt.Printf("Can't upgrade: %s (%s), status: %s\n", h.Name, h.Customer, h.Status)
+		} else {
+			res, status, err := c.UpgradeAgent(pat, h.Customer, h.Name, force, staff)
+			if err != nil {
+				return err
+			}
 
-		if status != http.StatusOK && status != http.StatusAccepted &&
-			status != http.StatusNoContent && status != http.StatusCreated {
-			return fmt.Errorf("unexpected status code: %d, error: %s", status, res)
-		}
+			if status != http.StatusOK && status != http.StatusAccepted &&
+				status != http.StatusNoContent && status != http.StatusCreated {
+				return fmt.Errorf("unexpected status code: %d, error: %s", status, res)
+			}
 
-		fmt.Printf("Upgrade requested for %s, status: %d\n", owner, status)
-		if strings.TrimSpace(res) != "" {
-			fmt.Printf("Response: %s\n", res)
+			fmt.Printf("Upgrade: %s (%s): %d (%dms)\n", h.Name, h.Customer, status, time.Since(st).Milliseconds())
+
+			if strings.TrimSpace(res) != "" {
+				fmt.Printf("Response: %s\n", res)
+			}
 		}
+		fmt.Println("")
 	}
 
 	return nil
@@ -145,4 +154,5 @@ type Host struct {
 	Name      string `json:"name"`
 	Customer  string `json:"customer"`
 	Reachable bool   `json:"reachable"`
+	Status    string `json:"status"`
 }
