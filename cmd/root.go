@@ -53,6 +53,8 @@ https://github.com/self-actuated/actuated-cli
 	root.AddCommand(makeAuth())
 	root.AddCommand(MakeVersion())
 
+	root.AddCommand(makeController())
+
 }
 
 func Execute() error {

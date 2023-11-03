@@ -100,7 +100,6 @@ func runUpgradeE(cmd *cobra.Command, args []string) error {
 		}
 
 		if len(hostsList) == 0 {
-
 			return fmt.Errorf("no hosts found")
 		}
 		upgradeHosts = hostsList
