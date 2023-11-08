@@ -64,7 +64,7 @@ func (c *Client) ListJobs(patStr string, owner string, staff bool, json bool) (s
 
 	res, err := c.httpClient.Do(req)
 	if err != nil {
-		return "", http.StatusBadRequest, err
+		return "", http.StatusServiceUnavailable, err
 	}
 
 	var body []byte

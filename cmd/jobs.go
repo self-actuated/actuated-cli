@@ -69,7 +69,7 @@ func runJobsE(cmd *cobra.Command, args []string) error {
 	}
 
 	if status != http.StatusOK {
-		return fmt.Errorf("unexpected status code: %d", status)
+		return fmt.Errorf("unexpected status code: %d, message: %s", status, string(res))
 	}
 
 	if requestJson {
