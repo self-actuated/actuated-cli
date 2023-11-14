@@ -137,13 +137,14 @@ func runSshConnectE(cmd *cobra.Command, args []string) error {
 	}
 
 	us, _ := url.Parse(SshGw)
+	sshArgs := []string{"-p", strconv.Itoa(found.Port), "runner@" + us.Host, "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null"}
 
 	if printOnly {
-		fmt.Printf("ssh -p %d ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null runner@%s\n", found.Port, us.Host)
+		fmt.Printf("ssh %s\n", strings.Join(sshArgs, " "))
 		return nil
 	}
 
-	sshCmd := exec.CommandContext(ctx, "ssh", "-p", strconv.Itoa(found.Port), "runner@"+us.Host)
+	sshCmd := exec.CommandContext(ctx, "ssh", sshArgs...)
 
 	sshCmd.Stdin = os.Stdin
 	sshCmd.Stdout = os.Stdout
