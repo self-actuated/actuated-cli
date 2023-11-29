@@ -85,7 +85,8 @@ func runUpgradeE(cmd *cobra.Command, args []string) error {
 
 	var upgradeHosts []Host
 	if allHosts {
-		hosts, httpStatus, err := c.ListRunners(pat, owner, staff, true)
+		includeImages := false
+		hosts, httpStatus, err := c.ListRunners(pat, owner, staff, includeImages, true)
 		if err != nil {
 			return err
 		}

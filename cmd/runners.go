@@ -29,12 +29,18 @@ func makeRunners() *cobra.Command {
 
 	cmd.RunE = runRunnersE
 
+	cmd.Flags().Bool("images", false, "Show the image being used for the rootfs and Kernel")
 	cmd.Flags().Bool("json", false, "Request output in JSON format")
 
 	return cmd
 }
 
 func runRunnersE(cmd *cobra.Command, args []string) error {
+
+	images, err := cmd.Flags().GetBool("images")
+	if err != nil {
+		return err
+	}
 
 	var owner string
 	if len(args) == 1 {
@@ -62,7 +68,7 @@ func runRunnersE(cmd *cobra.Command, args []string) error {
 
 	c := pkg.NewClient(http.DefaultClient, os.Getenv("ACTUATED_URL"))
 
-	res, status, err := c.ListRunners(pat, owner, staff, requestJson)
+	res, status, err := c.ListRunners(pat, owner, staff, images, requestJson)
 
 	if err != nil {
 		return err
