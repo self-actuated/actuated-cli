@@ -24,7 +24,8 @@ test:
 .PHONY: dist
 dist:
 	mkdir -p bin
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags $(LDFLAGS)  -o bin/actuated-cli
-	CGO_ENABLED=0 GOOS=darwin go build -ldflags $(LDFLAGS)  -o bin/actuated-cli-darwin
-	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -a -ldflags $(LDFLAGS) -installsuffix cgo -o bin/actuated-cli-darwin-arm64
-	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -ldflags $(LDFLAGS)  -o bin/actuated-cli.exe
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags $(LDFLAGS) -o bin/actuated-cli
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags $(LDFLAGS) -o bin/actuated-cli-arm64
+	CGO_ENABLED=0 GOOS=darwin go build -ldflags $(LDFLAGS) -o bin/actuated-cli-darwin
+	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -ldflags $(LDFLAGS)  -o bin/actuated-cli-darwin-arm64
+	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -ldflags $(LDFLAGS) -o bin/actuated-cli.exe
