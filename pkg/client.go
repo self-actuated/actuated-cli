@@ -87,7 +87,7 @@ func (c *Client) ListRunners(patStr string, owner string, staff, images, json bo
 	}
 
 	if images {
-		q.Set("image", "1")
+		q.Set("images", "1")
 	}
 
 	if len(owner) > 0 {
