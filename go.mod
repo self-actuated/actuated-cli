@@ -3,7 +3,6 @@ module github.com/self-actuated/actuated-cli
 go 1.20
 
 require (
-	github.com/alexellis/arkade v0.0.0-20230802064022-97a230f05aec
 	github.com/google/go-github/v52 v52.0.0
 	github.com/morikuni/aec v1.0.0
 	github.com/olekukonko/tablewriter v0.0.5
