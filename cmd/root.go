@@ -47,6 +47,7 @@ https://github.com/self-actuated/actuated-cli
 	root.AddCommand(makeAgentLogs())
 	root.AddCommand(makeLogs())
 	root.AddCommand(makeUpgrade())
+	root.AddCommand(makeIncreases())
 
 	root.AddCommand(makeSSH())
 

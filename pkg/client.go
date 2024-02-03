@@ -76,6 +76,61 @@ func (c *Client) ListJobs(patStr string, owner string, staff bool, json bool) (s
 	return string(body), res.StatusCode, nil
 }
 
+func (c *Client) GetBuildIncreases(patStr string, owner string, startDate time.Time, staff bool, json bool) (string, int, error) {
+
+	u, _ := url.Parse(c.baseURL)
+	u.Path = "/api/v1/job-increases"
+	q := u.Query()
+
+	if staff {
+		q.Set("staff", "1")
+	}
+
+	if len(owner) > 0 {
+		q.Set("owner", owner)
+	}
+	q.Add("startDate", startDate.Format("2006-01-02"))
+	log.Printf("Date: %s", startDate.Format("2006-01-02"))
+	u.RawQuery = q.Encode()
+
+	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
+	if err != nil {
+		return "", http.StatusBadRequest, err
+	}
+
+	if json {
+		req.Header.Set("Accept", "application/json")
+	}
+
+	req.Header.Set("Authorization", "Bearer "+patStr)
+
+	if os.Getenv("DEBUG") == "1" {
+		sanitised := http.Header{}
+		for k, v := range req.Header {
+
+			if k == "Authorization" {
+				v = []string{"redacted"}
+			}
+			sanitised[k] = v
+		}
+
+		fmt.Printf("URL %s\nHeaders: %v\n", u.String(), sanitised)
+	}
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return "", http.StatusServiceUnavailable, err
+	}
+
+	var body []byte
+	if res.Body != nil {
+		defer res.Body.Close()
+		body, _ = io.ReadAll(res.Body)
+	}
+
+	return string(body), res.StatusCode, nil
+}
+
 func (c *Client) ListRunners(patStr string, owner string, staff, images, json bool) (string, int, error) {
 
 	u, _ := url.Parse(c.baseURL)
