@@ -29,7 +29,7 @@ func makeJobs() *cobra.Command {
 
 	cmd.RunE = runJobsE
 
-	cmd.Flags().Bool("json", false, "Request output in JSON format")
+	cmd.Flags().BoolP("json", "j", false, "Request output in JSON format")
 
 	return cmd
 }

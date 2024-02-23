@@ -30,7 +30,7 @@ func makeRunners() *cobra.Command {
 	cmd.RunE = runRunnersE
 
 	cmd.Flags().Bool("images", false, "Show the image being used for the rootfs and Kernel")
-	cmd.Flags().Bool("json", false, "Request output in JSON format")
+	cmd.Flags().BoolP("json", "j", false, "Request output in JSON format")
 
 	return cmd
 }

@@ -21,9 +21,8 @@ func makeIncreases() *cobra.Command {
 
 	cmd.RunE = runIncreasesE
 
-	cmd.Flags().Bool("json", false, "Request output in JSON format")
-	cmd.Flags().Bool("staff", false, "Request staff increases")
 	cmd.Flags().Int("days", 30, "The number of days to look back for increases")
+	cmd.Flags().BoolP("json", "j", false, "Request output in JSON format")
 
 	return cmd
 }

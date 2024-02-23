@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/url"
+	"os"
 	"sort"
 	"strconv"
 	"time"
@@ -24,6 +25,8 @@ func makeSshList() *cobra.Command {
 		Aliases: []string{"ls"},
 		Short:   "List SSH sessions",
 	}
+
+	cmd.Flags().BoolP("json", "j", false, "Request output in JSON format")
 
 	cmd.RunE = runSshListE
 
@@ -66,6 +69,11 @@ func runSshListE(cmd *cobra.Command, args []string) error {
 	}
 	defer res.Body.Close()
 
+	jsonFormat, err := cmd.Flags().GetBool("json")
+	if err != nil {
+		return err
+	}
+
 	buf := bytes.NewBuffer(nil)
 	table := tablewriter.NewWriter(buf)
 
@@ -102,6 +110,15 @@ func runSshListE(cmd *cobra.Command, args []string) error {
 			strconv.Itoa(session.Tx),
 			since.String(),
 		})
+	}
+
+	if jsonFormat {
+		e := json.NewEncoder(os.Stdout)
+		e.SetIndent("", "  ")
+		if err := e.Encode(onlyActor); err != nil {
+			return err
+		}
+		return nil
 	}
 
 	table.Render()

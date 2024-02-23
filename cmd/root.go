@@ -30,11 +30,11 @@ https://github.com/self-actuated/actuated-cli
 
 	root.PersistentFlags().String("token-value", "", "Personal Access Token")
 	root.PersistentFlags().StringP("token", "t", "$HOME/.actuated/PAT", "File to read for Personal Access Token")
-	root.PersistentFlags().Bool("staff", false, "Execute the command as an actuated staff member")
+	root.PersistentFlags().BoolP("staff", "s", false, "Execute the command as an actuated staff member")
 
 	root.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
 		if _, ok := os.LookupEnv("ACTUATED_URL"); !ok {
-			return fmt.Errorf("ACTUATED_URL environment variable is not set")
+			return fmt.Errorf(`ACTUATED_URL environment variable is not set, see the CLI tab in the dashboard for instructions`)
 		}
 		return nil
 	}
@@ -55,7 +55,6 @@ https://github.com/self-actuated/actuated-cli
 	root.AddCommand(MakeVersion())
 
 	root.AddCommand(makeController())
-
 }
 
 func Execute() error {
