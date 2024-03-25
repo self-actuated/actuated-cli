@@ -80,6 +80,11 @@ func runIncreasesE(cmd *cobra.Command, args []string) error {
 		res = prettyJSON.String()
 	}
 
+	yr, isoWeek := startDate.ISOWeek()
+	fmt.Printf("Start date: %s\tWeek: %d (%d)\n",
+		startDate.Format("2006-01-02"),
+		isoWeek,
+		yr)
 	fmt.Println(res)
 
 	return nil

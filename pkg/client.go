@@ -90,7 +90,7 @@ func (c *Client) GetBuildIncreases(patStr string, owner string, startDate time.T
 		q.Set("owner", owner)
 	}
 	q.Add("startDate", startDate.Format("2006-01-02"))
-	log.Printf("Date: %s", startDate.Format("2006-01-02"))
+
 	u.RawQuery = q.Encode()
 
 	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
