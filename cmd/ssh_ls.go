@@ -22,7 +22,7 @@ const SshGw = "https://sshgw.actuated.dev"
 func makeSshList() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "list",
-		Aliases: []string{"ls"},
+		Aliases: []string{"ls", "l"},
 		Short:   "List SSH sessions",
 	}
 

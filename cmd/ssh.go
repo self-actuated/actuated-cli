@@ -11,6 +11,7 @@ func makeSSH() *cobra.Command {
 		Short: "List and connect to SSH sessions",
 		Long: `List and connect to SSH sessions to explore the environment
 or debug a problem with a build.`,
+		Aliases:       []string{"s"},
 		SilenceErrors: true,
 		SilenceUsage:  true,
 	}

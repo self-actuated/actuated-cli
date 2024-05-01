@@ -27,6 +27,7 @@ func makeSshConnect() *cobra.Command {
   # Connect to a specific session
   actuated-cli ssh connect HOST
 `,
+		Aliases: []string{"c"},
 	}
 
 	cmd.RunE = runSshConnectE
