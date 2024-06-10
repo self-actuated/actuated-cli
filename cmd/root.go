@@ -50,6 +50,7 @@ https://github.com/self-actuated/actuated-cli
 	root.AddCommand(makeIncreases())
 
 	root.AddCommand(makeSSH())
+	root.AddCommand(makeDisable())
 
 	root.AddCommand(makeAuth())
 	root.AddCommand(MakeVersion())
