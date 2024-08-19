@@ -4,9 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"strings"
+	"text/tabwriter"
+	"time"
+
+	"github.com/docker/go-units"
 
 	"github.com/self-actuated/actuated-cli/pkg"
 	"github.com/spf13/cobra"
@@ -28,6 +33,8 @@ func makeJobs() *cobra.Command {
 	}
 
 	cmd.RunE = runJobsE
+
+	cmd.Flags().BoolP("verbose", "v", false, "Show additional columns in the output")
 
 	cmd.Flags().BoolP("json", "j", false, "Request output in JSON format")
 
@@ -56,13 +63,20 @@ func runJobsE(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	verbose, err := cmd.Flags().GetBool("verbose")
+	if err != nil {
+		return err
+	}
+
 	if len(pat) == 0 {
 		return fmt.Errorf("pat is required")
 	}
 
 	c := pkg.NewClient(http.DefaultClient, os.Getenv("ACTUATED_URL"))
 
-	res, status, err := c.ListJobs(pat, owner, staff, requestJson)
+	acceptJSON := true
+
+	res, status, err := c.ListJobs(pat, owner, staff, acceptJSON)
 
 	if err != nil {
 		return err
@@ -80,9 +94,94 @@ func runJobsE(cmd *cobra.Command, args []string) error {
 			return err
 		}
 		res = prettyJSON.String()
+		fmt.Println(res)
+	} else {
+
+		var statuses []JobStatus
+
+		if err := json.Unmarshal([]byte(res), &statuses); err != nil {
+			return err
+		}
+		printEvents(os.Stdout, statuses, verbose)
 	}
-	fmt.Println(res)
 
 	return nil
 
+}
+
+func printEvents(w io.Writer, statuses []JobStatus, verbose bool) {
+	tabwriter := tabwriter.NewWriter(w, 0, 0, 1, ' ', tabwriter.TabIndent)
+	if verbose {
+		fmt.Fprintf(tabwriter, "JOB ID\tOWNER\tREPO\tJOB\tRUNNER\tSERVER\tSTATUS\tSTARTED\tAGE\tLABELS\tURL\n")
+	} else {
+		fmt.Fprintf(tabwriter, "OWNER\tREPO\tJOB\tSTATUS\tAGE\tURL\n")
+	}
+
+	for _, status := range statuses {
+		duration := ""
+
+		if status.StartedAt != nil && !status.StartedAt.IsZero() {
+			duration = humanDuration(time.Since(*status.StartedAt))
+		}
+
+		if verbose {
+			fmt.Fprintf(tabwriter, "%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
+				status.JobID,
+				status.Owner,
+				status.Repo,
+				status.JobName,
+				status.RunnerName,
+				status.AgentName,
+				status.Status,
+				status.StartedAt.Format(time.RFC3339),
+				duration,
+				strings.Join(status.Labels, ","),
+				fmt.Sprintf("https://github.com/%s/%s/runs/%d", status.Owner, status.Repo, status.JobID),
+			)
+		} else {
+			fmt.Fprintf(tabwriter, "%s\t%s\t%s\t%s\t%s\t%s\n",
+				status.Owner,
+				status.Repo,
+				status.JobName,
+				status.Status,
+				duration,
+				fmt.Sprintf("https://github.com/%s/%s/runs/%d", status.Owner, status.Repo, status.JobID))
+
+		}
+
+	}
+	tabwriter.Flush()
+}
+
+type JobStatus struct {
+	JobID        int64  `json:"job_id"`
+	Owner        string `json:"owner"`
+	Repo         string `json:"repo"`
+	WorkflowName string `json:"workflow_name"`
+	JobName      string `json:"job_name"`
+	Actor        string `json:"actor,omitempty"`
+
+	RunnerName string   `json:"runner_name,omitempty"`
+	Status     string   `json:"status"`
+	Conclusion string   `json:"conclusion,omitempty"`
+	Labels     []string `json:"labels,omitempty"`
+
+	UpdatedAt   *time.Time `json:"updated_at"`
+	StartedAt   *time.Time `json:"startedAt,omitempty"`
+	CompletedAt *time.Time `json:"completedAt,omitempty"`
+
+	AgentName string `json:"agent_name,omitempty"`
+}
+
+// types.HumanDuration fixes a long string for a value < 1s
+func humanDuration(duration time.Duration) string {
+	v := strings.ToLower(units.HumanDuration(duration))
+
+	if v == "less than a second" {
+		return fmt.Sprintf("%d ms", duration.Milliseconds())
+	} else if v == "about a minute" {
+		return fmt.Sprintf("%d seconds", int(duration.Seconds()))
+	}
+
+	return v
 }
