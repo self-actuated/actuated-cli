@@ -7,7 +7,6 @@ require (
 	github.com/google/go-github/v52 v52.0.0
 	github.com/morikuni/aec v1.0.0
 	github.com/olekukonko/tablewriter v0.0.5
-	github.com/openfaasltd/actuated/types v0.0.0-20240729175505-d862db002103
 	github.com/spf13/cobra v1.8.0
 	golang.org/x/oauth2 v0.21.0
 )
