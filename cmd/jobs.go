@@ -11,8 +11,6 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/docker/go-units"
-
 	"github.com/self-actuated/actuated-cli/pkg"
 	"github.com/spf13/cobra"
 )
@@ -112,20 +110,35 @@ func runJobsE(cmd *cobra.Command, args []string) error {
 func printEvents(w io.Writer, statuses []JobStatus, verbose bool) {
 	tabwriter := tabwriter.NewWriter(w, 0, 0, 1, ' ', tabwriter.TabIndent)
 	if verbose {
-		fmt.Fprintf(tabwriter, "JOB ID\tOWNER\tREPO\tJOB\tRUNNER\tSERVER\tSTATUS\tSTARTED\tAGE\tLABELS\tURL\n")
+		fmt.Fprintf(tabwriter, "JOB ID\tOWNER\tREPO\tJOB\tRUNNER\tSERVER\tSTATUS\tSTARTED\tAGE\tETA\tLABELS\tURL\n")
 	} else {
-		fmt.Fprintf(tabwriter, "OWNER\tREPO\tJOB\tSTATUS\tAGE\tURL\n")
+		fmt.Fprintf(tabwriter, "OWNER\tREPO\tJOB\tSTATUS\tAGE\tETA\tURL\n")
 	}
 
 	for _, status := range statuses {
 		duration := ""
 
 		if status.StartedAt != nil && !status.StartedAt.IsZero() {
-			duration = humanDuration(time.Since(*status.StartedAt))
+			duration = time.Since(*status.StartedAt).Round(time.Second).String()
+		}
+
+		eta := ""
+		if status.Status != "queued" && status.AverageRuntime > time.Second*0 {
+			if status.StartedAt != nil {
+				runningTime := time.Since(*status.StartedAt)
+				avgDuration := status.AverageRuntime
+				etaV := avgDuration - runningTime
+				if etaV < time.Second*0 {
+					v := etaV * -1
+					eta = "+" + v.Round(time.Second).String()
+				} else {
+					eta = etaV.Round(time.Second).String()
+				}
+			}
 		}
 
 		if verbose {
-			fmt.Fprintf(tabwriter, "%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
+			fmt.Fprintf(tabwriter, "%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
 				status.JobID,
 				status.Owner,
 				status.Repo,
@@ -135,16 +148,18 @@ func printEvents(w io.Writer, statuses []JobStatus, verbose bool) {
 				status.Status,
 				status.StartedAt.Format(time.RFC3339),
 				duration,
+				eta,
 				strings.Join(status.Labels, ","),
 				fmt.Sprintf("https://github.com/%s/%s/runs/%d", status.Owner, status.Repo, status.JobID),
 			)
 		} else {
-			fmt.Fprintf(tabwriter, "%s\t%s\t%s\t%s\t%s\t%s\n",
+			fmt.Fprintf(tabwriter, "%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
 				status.Owner,
 				status.Repo,
 				status.JobName,
 				status.Status,
 				duration,
+				eta,
 				fmt.Sprintf("https://github.com/%s/%s/runs/%d", status.Owner, status.Repo, status.JobID))
 
 		}
@@ -171,17 +186,8 @@ type JobStatus struct {
 	CompletedAt *time.Time `json:"completedAt,omitempty"`
 
 	AgentName string `json:"agent_name,omitempty"`
-}
 
-// types.HumanDuration fixes a long string for a value < 1s
-func humanDuration(duration time.Duration) string {
-	v := strings.ToLower(units.HumanDuration(duration))
+	AverageRuntime time.Duration `json:"averageRuntime,omitempty"`
 
-	if v == "less than a second" {
-		return fmt.Sprintf("%d ms", duration.Milliseconds())
-	} else if v == "about a minute" {
-		return fmt.Sprintf("%d seconds", int(duration.Seconds()))
-	}
-
-	return v
+	QueuedAt *time.Time `json:"queuedAt,omitempty"`
 }
