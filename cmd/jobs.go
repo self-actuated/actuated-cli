@@ -36,6 +36,8 @@ func makeJobs() *cobra.Command {
 
 	cmd.Flags().BoolP("json", "j", false, "Request output in JSON format")
 
+	cmd.Flags().BoolP("urls", "u", false, "Include the URLs to the job in the output")
+
 	return cmd
 }
 
@@ -47,6 +49,11 @@ func runJobsE(cmd *cobra.Command, args []string) error {
 	}
 
 	pat, err := getPat(cmd)
+	if err != nil {
+		return err
+	}
+
+	includeURL, err := cmd.Flags().GetBool("urls")
 	if err != nil {
 		return err
 	}
@@ -75,7 +82,6 @@ func runJobsE(cmd *cobra.Command, args []string) error {
 	acceptJSON := true
 
 	res, status, err := c.ListJobs(pat, owner, staff, acceptJSON)
-
 	if err != nil {
 		return err
 	}
@@ -100,26 +106,51 @@ func runJobsE(cmd *cobra.Command, args []string) error {
 		if err := json.Unmarshal([]byte(res), &statuses); err != nil {
 			return err
 		}
-		printEvents(os.Stdout, statuses, verbose)
+		printEvents(os.Stdout, statuses, verbose, includeURL)
 	}
 
 	return nil
 
 }
 
-func printEvents(w io.Writer, statuses []JobStatus, verbose bool) {
+func printEvents(w io.Writer, statuses []JobStatus, verbose, includeURL bool) {
 	tabwriter := tabwriter.NewWriter(w, 0, 0, 1, ' ', tabwriter.TabIndent)
 	if verbose {
-		fmt.Fprintf(tabwriter, "JOB ID\tOWNER\tREPO\tJOB\tRUNNER\tSERVER\tSTATUS\tSTARTED\tAGE\tETA\tLABELS\tURL\n")
+
+		st := "JOB ID\tOWNER\tREPO\tJOB\tRUNNER\tSERVER\tSTATUS\tSTARTED\tAGE\tETA\tLABELS"
+		if includeURL {
+			st = st + "\tURL"
+		}
+
+		fmt.Fprintln(tabwriter, st)
 	} else {
-		fmt.Fprintf(tabwriter, "OWNER\tREPO\tJOB\tSTATUS\tAGE\tETA\tURL\n")
+		st := "OWNER\tREPO\tJOB\tSTATUS\tAGE\tETA"
+		if includeURL {
+			st = st + "\tURL"
+		}
+
+		fmt.Fprintln(tabwriter, st)
 	}
+
+	var (
+		totalJobs    int
+		totalQueued  int
+		totalRunning int
+	)
+
+	totalJobs = len(statuses)
 
 	for _, status := range statuses {
 		duration := ""
 
 		if status.StartedAt != nil && !status.StartedAt.IsZero() {
 			duration = time.Since(*status.StartedAt).Round(time.Second).String()
+		}
+
+		if status.Status == "queued" {
+			totalQueued++
+		} else if status.Status == "in_progress" {
+			totalRunning++
 		}
 
 		eta := ""
@@ -138,7 +169,8 @@ func printEvents(w io.Writer, statuses []JobStatus, verbose bool) {
 		}
 
 		if verbose {
-			fmt.Fprintf(tabwriter, "%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
+
+			line := fmt.Sprintf("%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s",
 				status.JobID,
 				status.Owner,
 				status.Repo,
@@ -146,26 +178,43 @@ func printEvents(w io.Writer, statuses []JobStatus, verbose bool) {
 				status.RunnerName,
 				status.AgentName,
 				status.Status,
-				status.StartedAt.Format(time.RFC3339),
 				duration,
 				eta,
-				strings.Join(status.Labels, ","),
-				fmt.Sprintf("https://github.com/%s/%s/runs/%d", status.Owner, status.Repo, status.JobID),
-			)
+				strings.Join(status.Labels, ","))
+			if includeURL {
+				line = line + fmt.Sprintf("\thttps://github.com/%s/%s/runs/%d", status.Owner, status.Repo, status.JobID)
+			}
+
+			fmt.Fprintln(tabwriter, line)
 		} else {
-			fmt.Fprintf(tabwriter, "%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
+			line := fmt.Sprintf("%s\t%s\t%s\t%s\t%s\t%s",
 				status.Owner,
 				status.Repo,
 				status.JobName,
 				status.Status,
 				duration,
-				eta,
-				fmt.Sprintf("https://github.com/%s/%s/runs/%d", status.Owner, status.Repo, status.JobID))
+				eta)
+
+			if includeURL {
+				line = line + fmt.Sprintf("\thttps://github.com/%s/%s/runs/%d", status.Owner, status.Repo, status.JobID)
+			}
+
+			fmt.Fprintln(tabwriter, line)
 
 		}
+	}
+
+	tabwriter.Flush()
+	if totalJobs > 0 {
+
+		st := "\nJOBS\tRUNNING\tQUEUED"
+
+		fmt.Fprintln(tabwriter, st)
+
+		fmt.Fprintf(tabwriter, "%d\t%d\t%d\n", totalJobs, totalRunning, totalQueued)
+		tabwriter.Flush()
 
 	}
-	tabwriter.Flush()
 }
 
 type JobStatus struct {
