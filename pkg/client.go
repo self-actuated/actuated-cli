@@ -346,6 +346,11 @@ func (c *Client) GetMetering(patStr, owner, host, id string, staff bool) (string
 		body, _ = io.ReadAll(res.Body)
 	}
 
+	if res.StatusCode != http.StatusOK &&
+		res.StatusCode != http.StatusAccepted {
+		return string(body), res.StatusCode, nil
+	}
+
 	var prettyJSON bytes.Buffer
 
 	if err = json.Indent(&prettyJSON, []byte(body), "", "  "); err != nil {

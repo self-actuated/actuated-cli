@@ -74,12 +74,11 @@ func runMeteringE(cmd *cobra.Command, args []string) error {
 	c := pkg.NewClient(http.DefaultClient, os.Getenv("ACTUATED_URL"))
 
 	res, status, err := c.GetMetering(pat, owner, host, id, staff)
-
 	if err != nil {
 		return err
 	}
 
-	if status != http.StatusAccepted {
+	if status != http.StatusAccepted && status != http.StatusOK {
 		return fmt.Errorf("unexpected status code: %d, body: %s", status, res)
 	}
 
