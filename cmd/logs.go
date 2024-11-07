@@ -21,7 +21,7 @@ range of time.`,
 		Example: `# Logs from all VMs over the past 15 minutes
 actuated-cli logs --owner=OWNER --age=15m HOST
 
-# All logs from a specific VM using its hostname as the --id
+# Get the logs from a specific VM using its hostname as the --id
 actuated-cli logs --owner=OWNER --id=ID HOST
 `,
 	}

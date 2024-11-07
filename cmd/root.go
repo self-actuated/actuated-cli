@@ -56,6 +56,8 @@ https://github.com/self-actuated/actuated-cli
 	root.AddCommand(MakeVersion())
 
 	root.AddCommand(makeController())
+
+	root.AddCommand(makeMetering())
 }
 
 func Execute() error {

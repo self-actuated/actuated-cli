@@ -18,6 +18,10 @@ func makeMetering() *cobra.Command {
 
 		Example: `# Get the metering snapshot from a specific VM using its hostname as the --id
 actuated-cli metering --owner=OWNER --id=ID HOST
+
+# Pipe to vmmeter for pretty-printing
+
+actuated-cli metering --owner=OWNER --id=ID HOST | vmmeter
 `,
 	}
 
