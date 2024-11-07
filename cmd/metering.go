@@ -20,7 +20,6 @@ func makeMetering() *cobra.Command {
 actuated-cli metering --owner=OWNER --id=ID HOST
 
 # Pipe to vmmeter for pretty-printing
-
 actuated-cli metering --owner=OWNER --id=ID HOST | vmmeter
 `,
 	}
