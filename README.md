@@ -108,6 +108,17 @@ actuated-cli logs \
     server1
 ```
 
+## View the metering snapshot from a VM
+
+Use the `--id` flag to specify the runner ID.
+
+```bash
+actuated-cli metering \
+    --owner actuated-samples \
+    --id ea5c285282620927689d90af3cfa3be2d5e2d004 \
+    server1
+```
+
 ## Check the logs of the actuated agent service
 
 Show the logs of the actuated agent binary running on your server.

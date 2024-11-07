@@ -1,6 +1,8 @@
 package pkg
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -290,6 +292,67 @@ func (c *Client) GetLogs(patStr, owner, host, id string, age time.Duration, staf
 	}
 
 	return string(body), res.StatusCode, nil
+}
+
+func (c *Client) GetMetering(patStr, owner, host, id string, staff bool) (string, int, error) {
+
+	u, _ := url.Parse(c.baseURL)
+	u.Path = "/api/v1/metering"
+
+	q := u.Query()
+	q.Set("owner", owner)
+	q.Set("host", host)
+
+	if len(id) > 0 {
+		q.Set("id", id)
+	} else {
+		return "", http.StatusBadRequest, fmt.Errorf("id is required")
+	}
+
+	if staff {
+		q.Set("staff", "1")
+	}
+
+	u.RawQuery = q.Encode()
+
+	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
+	if err != nil {
+		return "", http.StatusBadRequest, err
+	}
+
+	req.Header.Set("Authorization", "Bearer "+patStr)
+
+	if os.Getenv("DEBUG") == "1" {
+		sanitised := http.Header{}
+		for k, v := range req.Header {
+
+			if k == "Authorization" {
+				v = []string{"redacted"}
+			}
+			sanitised[k] = v
+		}
+
+		fmt.Printf("URL %s\nHeaders: %v\n", u.String(), sanitised)
+	}
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return "", http.StatusBadRequest, err
+	}
+
+	var body []byte
+	if res.Body != nil {
+		defer res.Body.Close()
+		body, _ = io.ReadAll(res.Body)
+	}
+
+	var prettyJSON bytes.Buffer
+
+	if err = json.Indent(&prettyJSON, []byte(body), "", "  "); err != nil {
+		return "", http.StatusBadRequest, err
+	}
+
+	return prettyJSON.String(), res.StatusCode, nil
 }
 
 func (c *Client) GetAgentLogs(patStr, owner, host string, age time.Duration, staff bool) (string, int, error) {
