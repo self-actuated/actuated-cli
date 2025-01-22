@@ -69,13 +69,12 @@ func runRunnersE(cmd *cobra.Command, args []string) error {
 	c := pkg.NewClient(http.DefaultClient, os.Getenv("ACTUATED_URL"))
 
 	res, status, err := c.ListRunners(pat, owner, staff, images, requestJson)
-
 	if err != nil {
 		return err
 	}
 
 	if status != http.StatusOK {
-		return fmt.Errorf("unexpected status code: %d", status)
+		return fmt.Errorf("unexpected status code: %d, message: %s", status, res)
 	}
 
 	if requestJson {

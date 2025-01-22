@@ -56,7 +56,7 @@ func runControllerLogsE(cmd *cobra.Command, args []string) error {
 	}
 
 	if status != http.StatusOK {
-		return fmt.Errorf("unexpected status code: %d, body: %s", status, res)
+		return fmt.Errorf("unexpected status code: %d, message: %s", status, res)
 	}
 
 	fmt.Println(res)
