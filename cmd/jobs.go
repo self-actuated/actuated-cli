@@ -36,7 +36,7 @@ func makeJobs() *cobra.Command {
 
 	cmd.Flags().BoolP("json", "j", false, "Request output in JSON format")
 
-	cmd.Flags().BoolP("urls", "u", false, "Include the URLs to the job in the output")
+	cmd.Flags().BoolP("urls", "u", false, "In verbose mode, control whether to include URLs (URLs always shown in non-verbose mode)")
 
 	return cmd
 }
@@ -106,7 +106,11 @@ func runJobsE(cmd *cobra.Command, args []string) error {
 		if err := json.Unmarshal([]byte(res), &statuses); err != nil {
 			return err
 		}
-		printEvents(os.Stdout, statuses, verbose, includeURL)
+		
+		// In non-verbose mode, always show URLs
+		// In verbose mode, respect the --urls flag
+		showURL := !verbose || includeURL
+		printEvents(os.Stdout, statuses, verbose, showURL)
 	}
 
 	return nil
@@ -117,7 +121,7 @@ func printEvents(w io.Writer, statuses []JobStatus, verbose, includeURL bool) {
 	tabwriter := tabwriter.NewWriter(w, 0, 0, 1, ' ', tabwriter.TabIndent)
 	if verbose {
 
-		st := "JOB ID\tOWNER\tREPO\tJOB\tRUNNER\tSERVER\tSTATUS\tSTARTED\tAGE\tETA\tLABELS"
+		st := "JOB ID\tOWNER\tREPO\tJOB\tRUNNER\tSERVER\tSTATUS\tAGE\tETA\tLABELS"
 		if includeURL {
 			st = st + "\tURL"
 		}
