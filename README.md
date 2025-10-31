@@ -4,6 +4,8 @@ The actuated-cli requires an access token for GitHub and is designed to be used 
 
 Most of the operations on the actuated dashboard are available as CLI commands.
 
+In GitHub's terminology, which is carried over into actuated, the flag `--owner` and the term "OWNER" refer exclusively to a GitHub organization, and not your personal user account (which would be the "actor").
+
 ## Installation
 
 Download the latest release from the [releases page](https://github.com/self-actuated/actuated-cli/releases).
