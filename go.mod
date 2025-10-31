@@ -1,10 +1,10 @@
 module github.com/self-actuated/actuated-cli
 
-go 1.22.0
+go 1.24.0
 
 require (
 	github.com/docker/go-units v0.5.0
-	github.com/google/go-github/v52 v52.0.0
+	github.com/google/go-github/v76 v76.0.0
 	github.com/morikuni/aec v1.0.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/spf13/cobra v1.8.1

@@ -10,10 +10,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func makeDisable() *cobra.Command {
+func makeDisableAgent() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "disable",
 		Short: "Disable the actuated service remotely.",
+		Long: `Disable the systemd service named actuated on the remote server, this should
+only be used when decommissioning a host. It can only be re-enabled by logging in via
+SSH and running "systemctl enable actuated".`,
 		Example: `  # Disable the actuated systemd service from restarting
 
   actuated-cli disable --owner ORG HOST

@@ -15,13 +15,16 @@ func init() {
 	root = &cobra.Command{
 		Use:   "actuated-cli",
 		Short: "The official CLI for actuated",
-		Long: `The actuated-cli is for customers and operators to query 
-the status of jobs and servers.
+		Long: `This CLI can be used to review and manage jobs, and the actuated
+agent installed on your servers.
 
-Run "actuated-cli auth" to get a Personal Access Token from GitHub
+The --owner flag or OWNER argument is a GitHub organization, i.e. for the path:
+self-actuated/actuated-cli, the owner is "self-actuated" also known as an org.
 
-See the project README on GitHub for more:
+Run "actuated-cli auth" to authenticate with GitHub.
 
+Learn more:
+https://docs.actuated.com/tasks/cli/
 https://github.com/self-actuated/actuated-cli
 `,
 		SilenceErrors: true,
@@ -39,24 +42,22 @@ https://github.com/self-actuated/actuated-cli
 		return nil
 	}
 
+	root.AddCommand(makeAuth())
+	root.AddCommand(MakeVersion())
+	root.AddCommand(makeSSH())
+
 	root.AddCommand(makeRunners())
 	root.AddCommand(makeJobs())
 	root.AddCommand(makeRepair())
-	root.AddCommand(makeRestart())
-
-	root.AddCommand(makeAgentLogs())
-	root.AddCommand(makeLogs())
-	root.AddCommand(makeUpgrade())
 	root.AddCommand(makeIncreases())
 
-	root.AddCommand(makeSSH())
-	root.AddCommand(makeDisable())
-
-	root.AddCommand(makeAuth())
-	root.AddCommand(MakeVersion())
+	root.AddCommand(makeRestart())
+	root.AddCommand(makeAgentLogs())
+	root.AddCommand(makeDisableAgent())
+	root.AddCommand(makeUpgrade())
+	root.AddCommand(makeLogs())
 
 	root.AddCommand(makeController())
-
 	root.AddCommand(makeMetering())
 }
 

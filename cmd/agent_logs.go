@@ -15,13 +15,16 @@ func makeAgentLogs() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "agent-logs",
 		Short: "Fetch logs from the agent's systemd service",
-		Example: `  # Latest logs for a given host:
+		Long: `Fetch the service logs from a remote server to if you need
+to confirm the rollout of updates, agent version, and to troubleshoot
+VM launches.`,
+		Example: `  # Latest logs for a given OWNER and HOST:
   actuated agent-logs --owner OWNER HOST
 
   # Latest logs for a given time-range
   actuated agent-logs --owner OWNER --age 1h HOST
   `,
-		Aliases: []string{"service-logs"},
+		Aliases: []string{"service-logs", "al"},
 	}
 
 	cmd.RunE = runAgentLogsE

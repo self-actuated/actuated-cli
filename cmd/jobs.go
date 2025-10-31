@@ -19,7 +19,27 @@ func makeJobs() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "jobs",
 		Short: "List jobs in the build queue",
-		Example: `  # Check queued and in_progress jobs for an organisation
+		Long: `List the queued and in_progress jobs for a OWNER or leave the option off
+to see all your authorized organisations.
+
+Troubleshooting:
+
+Why may a job be "stuck" as queued?
+
+You may have overloaded your runners so that jobs have been taken off the queue
+after to save thrashing. See also "actuated-cli repair"
+
+Why may a job be showing as in_progress for days?
+
+GitHub's API is often inconsistent, if you open the job page, you may see it's
+finished or cancelled, but still showing as running. This is a flaw in GitHub
+and they tend to clean these up periodically. We can mark it as hidden on our
+end if you reach out to support.
+`,
+		Example: `  # Check queued and in_progress jobs for your authorized orgs
+  actuated-cli jobs [--urls] 
+
+  # See jobs for a specific organisation, if you have access to multiple:
   actuated-cli jobs ORG
   
   # Get the same result, but in JSON format
@@ -33,9 +53,7 @@ func makeJobs() *cobra.Command {
 	cmd.RunE = runJobsE
 
 	cmd.Flags().BoolP("verbose", "v", false, "Show additional columns in the output")
-
 	cmd.Flags().BoolP("json", "j", false, "Request output in JSON format")
-
 	cmd.Flags().BoolP("urls", "u", false, "In verbose mode, control whether to include URLs (URLs always shown in non-verbose mode)")
 
 	return cmd
@@ -106,7 +124,7 @@ func runJobsE(cmd *cobra.Command, args []string) error {
 		if err := json.Unmarshal([]byte(res), &statuses); err != nil {
 			return err
 		}
-		
+
 		// In non-verbose mode, always show URLs
 		// In verbose mode, respect the --urls flag
 		showURL := !verbose || includeURL

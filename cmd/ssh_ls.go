@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/google/go-github/v52/github"
+	"github.com/google/go-github/v76/github"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 	"golang.org/x/oauth2"
