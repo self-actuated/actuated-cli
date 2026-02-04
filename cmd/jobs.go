@@ -8,9 +8,9 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"text/tabwriter"
 	"time"
 
+	"github.com/olekukonko/tablewriter"
 	"github.com/self-actuated/actuated-cli/pkg"
 	"github.com/spf13/cobra"
 )
@@ -37,7 +37,10 @@ and they tend to clean these up periodically. We can mark it as hidden on our
 end if you reach out to support.
 `,
 		Example: `  # Check queued and in_progress jobs for your authorized orgs
-  actuated-cli jobs [--urls] 
+  actuated-cli jobs
+
+  # See jobs with URLs and labels
+  actuated-cli jobs -v
 
   # See jobs for a specific organisation, if you have access to multiple:
   actuated-cli jobs ORG
@@ -52,9 +55,8 @@ end if you reach out to support.
 
 	cmd.RunE = runJobsE
 
-	cmd.Flags().BoolP("verbose", "v", false, "Show additional columns in the output")
+	cmd.Flags().BoolP("verbose", "v", false, "Show URLs")
 	cmd.Flags().BoolP("json", "j", false, "Request output in JSON format")
-	cmd.Flags().BoolP("urls", "u", false, "In verbose mode, control whether to include URLs (URLs always shown in non-verbose mode)")
 
 	return cmd
 }
@@ -67,11 +69,6 @@ func runJobsE(cmd *cobra.Command, args []string) error {
 	}
 
 	pat, err := getPat(cmd)
-	if err != nil {
-		return err
-	}
-
-	includeURL, err := cmd.Flags().GetBool("urls")
 	if err != nil {
 		return err
 	}
@@ -125,118 +122,130 @@ func runJobsE(cmd *cobra.Command, args []string) error {
 			return err
 		}
 
-		// In non-verbose mode, always show URLs
-		// In verbose mode, respect the --urls flag
-		showURL := !verbose || includeURL
-		printEvents(os.Stdout, statuses, verbose, showURL)
+		printEvents(os.Stdout, statuses, verbose)
 	}
 
 	return nil
 
 }
 
-func printEvents(w io.Writer, statuses []JobStatus, verbose, includeURL bool) {
-	tabwriter := tabwriter.NewWriter(w, 0, 0, 1, ' ', tabwriter.TabIndent)
-	if verbose {
-
-		st := "JOB ID\tOWNER\tREPO\tJOB\tRUNNER\tSERVER\tSTATUS\tAGE\tETA\tLABELS"
-		if includeURL {
-			st = st + "\tURL"
-		}
-
-		fmt.Fprintln(tabwriter, st)
-	} else {
-		st := "OWNER\tREPO\tJOB\tSTATUS\tAGE\tETA"
-		if includeURL {
-			st = st + "\tURL"
-		}
-
-		fmt.Fprintln(tabwriter, st)
+// progressBar generates a progress bar using soft block characters
+// width is the total width of the bar, progress is 0.0 to 1.0+
+// If progress > 1.0 (overflow), shows a + at the end
+func progressBar(progress float64, width int) string {
+	if width <= 0 {
+		width = 10
 	}
 
-	var (
-		totalJobs    int
-		totalQueued  int
-		totalRunning int
-	)
+	if progress < 0 {
+		progress = 0
+	}
 
-	totalJobs = len(statuses)
+	// Check for overflow (job running longer than expected)
+	if progress > 1.0 {
+		// Full bar with + to indicate overflow
+		bar := strings.Repeat("█", width-1) + "+"
+		return "[" + bar + "]"
+	}
+
+	filled := int(progress * float64(width))
+	if filled > width {
+		filled = width
+	}
+
+	// Use soft block characters: █ for filled, ░ for empty
+	bar := strings.Repeat("█", filled) + strings.Repeat("░", width-filled)
+	return "[" + bar + "]"
+}
+
+func printEvents(w io.Writer, statuses []JobStatus, verbose bool) {
+	table := tablewriter.NewWriter(w)
+
+	// Set up headers - ETA column shows status implicitly (Queued or progress bar)
+	if verbose {
+		table.SetHeader([]string{"OWNER/REPO", "JOB/WORKFLOW", "RUNNER/SERVER", "ETA", "LABELS", "URL"})
+	} else {
+		table.SetHeader([]string{"OWNER/REPO", "JOB/WORKFLOW", "RUNNER/SERVER", "ETA", "LABELS"})
+	}
+
+	// Configure table style
+	table.SetBorders(tablewriter.Border{Left: true, Top: true, Right: true, Bottom: true})
+	table.SetCenterSeparator("|")
+	table.SetColumnSeparator("|")
+	table.SetRowSeparator("-")
+	table.SetAutoWrapText(false)
+	table.SetAutoFormatHeaders(false)
+	table.SetRowLine(true)
 
 	for _, status := range statuses {
-		duration := ""
+		// Line 1 values
+		owner := status.Owner + "/"
+		job := status.JobName
+		runner := status.RunnerName
+		etaLine1 := ""
+		etaLine2 := ""
 
-		if status.StartedAt != nil && !status.StartedAt.IsZero() {
-			duration = time.Since(*status.StartedAt).Round(time.Second).String()
-		}
+		// Line 2 values
+		repo := status.Repo
+		workflow := status.WorkflowName
+		server := status.AgentName
 
 		if status.Status == "queued" {
-			totalQueued++
-		} else if status.Status == "in_progress" {
-			totalRunning++
-		}
+			// Queued jobs show "Queued" with empty progress bar
+			etaLine1 = "Queued"
+			etaLine2 = progressBar(0, 10)
+		} else if status.AverageRuntime > time.Second*0 && status.StartedAt != nil {
+			// Running jobs with ETA data
+			runningTime := time.Since(*status.StartedAt)
+			avgDuration := status.AverageRuntime
+			etaV := avgDuration - runningTime
 
-		eta := ""
-		if status.Status != "queued" && status.AverageRuntime > time.Second*0 {
-			if status.StartedAt != nil {
-				runningTime := time.Since(*status.StartedAt)
-				avgDuration := status.AverageRuntime
-				etaV := avgDuration - runningTime
-				if etaV < time.Second*0 {
-					v := etaV * -1
-					eta = "+" + v.Round(time.Second).String()
-				} else {
-					eta = etaV.Round(time.Second).String()
-				}
+			var progress float64
+			if avgDuration > 0 {
+				progress = float64(runningTime) / float64(avgDuration)
 			}
-		}
+			etaLine2 = progressBar(progress, 10)
 
-		if verbose {
-
-			line := fmt.Sprintf("%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s",
-				status.JobID,
-				status.Owner,
-				status.Repo,
-				status.JobName,
-				status.RunnerName,
-				status.AgentName,
-				status.Status,
-				duration,
-				eta,
-				strings.Join(status.Labels, ","))
-			if includeURL {
-				line = line + fmt.Sprintf("\thttps://github.com/%s/%s/runs/%d", status.Owner, status.Repo, status.JobID)
+			etaSec := int(etaV.Seconds())
+			if etaSec < 0 {
+				etaLine1 = fmt.Sprintf("+%ds", -etaSec)
+			} else {
+				etaLine1 = fmt.Sprintf("%ds", etaSec)
 			}
-
-			fmt.Fprintln(tabwriter, line)
 		} else {
-			line := fmt.Sprintf("%s\t%s\t%s\t%s\t%s\t%s",
-				status.Owner,
-				status.Repo,
-				status.JobName,
-				status.Status,
-				duration,
-				eta)
+			// Running but no ETA data available
+			etaLine1 = "Running"
+			etaLine2 = ""
+		}
 
-			if includeURL {
-				line = line + fmt.Sprintf("\thttps://github.com/%s/%s/runs/%d", status.Owner, status.Repo, status.JobID)
-			}
+		url := fmt.Sprintf("https://github.com/%s%s/runs/%d", owner, repo, status.JobID)
+		labels := ""
+		if len(status.Labels) > 0 {
+			labels = strings.Join(status.Labels, ",")
+		}
 
-			fmt.Fprintln(tabwriter, line)
-
+		// Use newlines to create two-line cells
+		if verbose {
+			table.Append([]string{
+				owner + "\n" + repo,
+				job + "\n" + workflow,
+				runner + "\n" + server,
+				etaLine1 + "\n" + etaLine2,
+				labels,
+				url,
+			})
+		} else {
+			table.Append([]string{
+				owner + "\n" + repo,
+				job + "\n" + workflow,
+				runner + "\n" + server,
+				etaLine1 + "\n" + etaLine2,
+				labels,
+			})
 		}
 	}
 
-	tabwriter.Flush()
-	if totalJobs > 0 {
-
-		st := "\nJOBS\tRUNNING\tQUEUED"
-
-		fmt.Fprintln(tabwriter, st)
-
-		fmt.Fprintf(tabwriter, "%d\t%d\t%d\n", totalJobs, totalRunning, totalQueued)
-		tabwriter.Flush()
-
-	}
+	table.Render()
 }
 
 type JobStatus struct {
