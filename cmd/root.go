@@ -36,8 +36,10 @@ https://github.com/self-actuated/actuated-cli
 	root.PersistentFlags().BoolP("staff", "s", false, "Execute the command as an actuated staff member")
 
 	root.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
-		if _, ok := os.LookupEnv("ACTUATED_URL"); !ok {
+		if v, ok := os.LookupEnv("ACTUATED_URL"); !ok || v == "" {
 			return fmt.Errorf(`ACTUATED_URL environment variable is not set, see the CLI tab in the dashboard for instructions`)
+		} else if strings.Contains(v, "o6s.io") {
+			return fmt.Errorf("the ACTUATED_URL loaded from your shell is out of date, visit https://dashboard.actuated.com and click \"CLI\" for the latest URL and edit export ACTUATED_URL=... in your bash or zsh profile")
 		}
 		return nil
 	}

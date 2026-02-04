@@ -12,15 +12,15 @@ import (
 )
 
 func PrintASCIIArt() {
-	arkadeLogo := aec.BlueF.Apply(actuatedCLIStr)
-	fmt.Print(arkadeLogo)
+	actuatedCLILogo := aec.BlueF.Apply(actuatedCLIStr)
+	fmt.Print(actuatedCLILogo)
 }
 
 func MakeVersion() *cobra.Command {
 	var command = &cobra.Command{
 		Use:          "version",
 		Short:        "Print the version",
-		Example:      `  arkade version`,
+		Example:      `  actuated-cli version`,
 		Aliases:      []string{"v"},
 		SilenceUsage: false,
 	}
@@ -45,6 +45,6 @@ const actuatedCLIStr = `
 
 Command Line Interface (CLI)
 
-Copyright OpenFaaS Ltd 2023. All rights reserved.
+Copyright OpenFaaS Ltd 2026. All rights reserved.
 
 `
