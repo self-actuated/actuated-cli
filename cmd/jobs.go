@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -106,14 +105,23 @@ func runJobsE(cmd *cobra.Command, args []string) error {
 	}
 
 	if requestJson {
+		var statuses []JobStatus
+		if err := json.Unmarshal([]byte(res), &statuses); err != nil {
+			return err
+		}
 
-		var prettyJSON bytes.Buffer
-		err := json.Indent(&prettyJSON, []byte(res), "", "  ")
+		// Populate client-side fields (e.g. the GitHub job URL) so the JSON
+		// output is the full object, matching what the verbose table view
+		// shows rather than just the raw server payload.
+		for i := range statuses {
+			statuses[i].URL = statuses[i].URLField()
+		}
+
+		out, err := json.MarshalIndent(statuses, "", "  ")
 		if err != nil {
 			return err
 		}
-		res = prettyJSON.String()
-		fmt.Println(res)
+		fmt.Println(string(out))
 	} else {
 
 		var statuses []JobStatus
@@ -218,7 +226,7 @@ func printEvents(w io.Writer, statuses []JobStatus, verbose bool) {
 			etaLine2 = ""
 		}
 
-		url := fmt.Sprintf("https://github.com/%s%s/runs/%d", owner, repo, status.JobID)
+		url := status.URLField()
 		labels := ""
 		if len(status.Labels) > 0 {
 			labels = strings.Join(status.Labels, ",")
@@ -260,6 +268,7 @@ type JobStatus struct {
 	Status     string   `json:"status"`
 	Conclusion string   `json:"conclusion,omitempty"`
 	Labels     []string `json:"labels,omitempty"`
+	URL        string   `json:"url,omitempty"`
 
 	UpdatedAt   *time.Time `json:"updated_at"`
 	StartedAt   *time.Time `json:"startedAt,omitempty"`
@@ -270,4 +279,10 @@ type JobStatus struct {
 	AverageRuntime time.Duration `json:"averageRuntime,omitempty"`
 
 	QueuedAt *time.Time `json:"queuedAt,omitempty"`
+}
+
+// URLField returns the GitHub URL for the job run, constructed client-side
+// from the owner, repo and job ID.
+func (j JobStatus) URLField() string {
+	return fmt.Sprintf("https://github.com/%s%s/runs/%d", j.Owner+"/", j.Repo, j.JobID)
 }
