@@ -62,6 +62,11 @@ end if you reach out to support.
 
 func runJobsE(cmd *cobra.Command, args []string) error {
 
+	platform := getPlatform()
+	if platform == PlatformGitLab {
+		return runGitLabJobsE(cmd, args)
+	}
+
 	var owner string
 	if len(args) == 1 {
 		owner = strings.TrimSpace(args[0])
@@ -91,7 +96,12 @@ func runJobsE(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("pat is required")
 	}
 
-	c := pkg.NewClient(http.DefaultClient, os.Getenv("ACTUATED_URL"))
+	controllerURL, err := getControllerURL()
+	if err != nil {
+		return err
+	}
+
+	c := pkg.NewClient(http.DefaultClient, controllerURL)
 
 	acceptJSON := true
 

@@ -617,3 +617,99 @@ func (c *Client) DisableAgent(patStr, owner, host string, staff bool) (string, i
 
 	return string(body), res.StatusCode, nil
 }
+
+func (c *Client) GitLabListRunners(patStr string, images, requestJSON bool) (string, int, error) {
+
+	u, _ := url.Parse(c.baseURL)
+	u.Path = "/api/v1/runners"
+	q := u.Query()
+
+	if images {
+		q.Set("images", "1")
+	}
+
+	u.RawQuery = q.Encode()
+
+	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
+	if err != nil {
+		return "", http.StatusBadRequest, err
+	}
+
+	if requestJSON {
+		req.Header.Set("Accept", "application/json")
+	}
+
+	req.Header.Set("Authorization", "Bearer "+patStr)
+
+	if os.Getenv("DEBUG") == "1" {
+		sanitised := http.Header{}
+		for k, v := range req.Header {
+			if k == "Authorization" {
+				v = []string{"redacted"}
+			}
+			sanitised[k] = v
+		}
+		fmt.Printf("URL %s\nHeaders: %v\n", u.String(), sanitised)
+	}
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return "", http.StatusServiceUnavailable, err
+	}
+
+	var body []byte
+	if res.Body != nil {
+		defer res.Body.Close()
+		body, _ = io.ReadAll(res.Body)
+	}
+
+	return string(body), res.StatusCode, nil
+}
+
+func (c *Client) GitLabListJobs(patStr string, namespace string, requestJSON bool) (string, int, error) {
+
+	u, _ := url.Parse(c.baseURL)
+	u.Path = "/api/v1/job-queue"
+	q := u.Query()
+
+	if len(namespace) > 0 {
+		q.Set("namespace", namespace)
+	}
+
+	u.RawQuery = q.Encode()
+
+	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
+	if err != nil {
+		return "", http.StatusBadRequest, err
+	}
+
+	if requestJSON {
+		req.Header.Set("Accept", "application/json")
+	}
+
+	req.Header.Set("Authorization", "Bearer "+patStr)
+
+	if os.Getenv("DEBUG") == "1" {
+		sanitised := http.Header{}
+		for k, v := range req.Header {
+			if k == "Authorization" {
+				v = []string{"redacted"}
+			}
+			sanitised[k] = v
+		}
+		fmt.Printf("URL %s\nHeaders: %v\n", u.String(), sanitised)
+	}
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return "", http.StatusServiceUnavailable, err
+	}
+
+	var body []byte
+	if res.Body != nil {
+		defer res.Body.Close()
+		body, _ = io.ReadAll(res.Body)
+	}
+
+	return string(body), res.StatusCode, nil
+}

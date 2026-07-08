@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/self-actuated/actuated-cli/pkg"
@@ -28,6 +27,9 @@ func makeControllerLogs() *cobra.Command {
 }
 
 func runControllerLogsE(cmd *cobra.Command, args []string) error {
+	if err := checkGitHubOnly("controller logs"); err != nil {
+		return err
+	}
 
 	pat, err := getPat(cmd)
 	if err != nil {
@@ -47,7 +49,12 @@ func runControllerLogsE(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("pat is required")
 	}
 
-	c := pkg.NewClient(http.DefaultClient, os.Getenv("ACTUATED_URL"))
+	controllerURL, err := getControllerURL()
+	if err != nil {
+		return err
+	}
+
+	c := pkg.NewClient(http.DefaultClient, controllerURL)
 
 	res, status, err := c.GetControllerLogs(pat, outputFormat, age)
 

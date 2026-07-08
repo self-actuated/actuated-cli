@@ -34,6 +34,9 @@ func makeSshList() *cobra.Command {
 }
 
 func runSshListE(cmd *cobra.Command, args []string) error {
+	if err := checkGitHubOnly("ssh list"); err != nil {
+		return err
+	}
 
 	pat, err := getPat(cmd)
 	if err != nil {

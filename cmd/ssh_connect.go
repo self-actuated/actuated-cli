@@ -38,6 +38,10 @@ func makeSshConnect() *cobra.Command {
 }
 
 func runSshConnectE(cmd *cobra.Command, args []string) error {
+	if err := checkGitHubOnly("ssh connect"); err != nil {
+		return err
+	}
+
 	pat, err := getPat(cmd)
 	if err != nil {
 		return err

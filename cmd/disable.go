@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/self-actuated/actuated-cli/pkg"
@@ -31,6 +30,10 @@ SSH and running "systemctl enable actuated".`,
 }
 
 func runDisableE(cmd *cobra.Command, args []string) error {
+	if err := checkGitHubOnly("disable"); err != nil {
+		return err
+	}
+
 	if len(args) < 1 {
 		return fmt.Errorf("specify the host as an argument")
 	}
@@ -59,7 +62,12 @@ func runDisableE(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("pat is required")
 	}
 
-	c := pkg.NewClient(http.DefaultClient, os.Getenv("ACTUATED_URL"))
+	controllerURL, err := getControllerURL()
+	if err != nil {
+		return err
+	}
+
+	c := pkg.NewClient(http.DefaultClient, controllerURL)
 
 	res, status, err := c.DisableAgent(pat, owner, host, staff)
 	if err != nil {

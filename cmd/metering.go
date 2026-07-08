@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/self-actuated/actuated-cli/pkg"
@@ -35,6 +34,10 @@ actuated-cli metering --owner=OWNER --id=ID HOST | vmmeter
 }
 
 func runMeteringE(cmd *cobra.Command, args []string) error {
+	if err := checkGitHubOnly("metering"); err != nil {
+		return err
+	}
+
 	if len(args) < 1 {
 		return fmt.Errorf("specify the host as an argument")
 	}
@@ -72,7 +75,12 @@ func runMeteringE(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("pat is required")
 	}
 
-	c := pkg.NewClient(http.DefaultClient, os.Getenv("ACTUATED_URL"))
+	controllerURL, err := getControllerURL()
+	if err != nil {
+		return err
+	}
+
+	c := pkg.NewClient(http.DefaultClient, controllerURL)
 
 	res, status, err := c.GetMetering(pat, owner, host, id, staff)
 	if err != nil {

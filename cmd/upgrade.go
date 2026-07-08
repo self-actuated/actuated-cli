@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
@@ -34,6 +33,9 @@ func makeUpgrade() *cobra.Command {
 }
 
 func runUpgradeE(cmd *cobra.Command, args []string) error {
+	if err := checkGitHubOnly("upgrade"); err != nil {
+		return err
+	}
 
 	allHosts, err := cmd.Flags().GetBool("all")
 	if err != nil {
@@ -81,7 +83,12 @@ func runUpgradeE(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("pat is required")
 	}
 
-	c := pkg.NewClient(http.DefaultClient, os.Getenv("ACTUATED_URL"))
+	controllerURL, err := getControllerURL()
+	if err != nil {
+		return err
+	}
+
+	c := pkg.NewClient(http.DefaultClient, controllerURL)
 
 	var upgradeHosts []Host
 	if allHosts {

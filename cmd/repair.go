@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/self-actuated/actuated-cli/pkg"
@@ -34,6 +33,9 @@ status.`,
 }
 
 func runRepairE(cmd *cobra.Command, args []string) error {
+	if err := checkGitHubOnly("repair"); err != nil {
+		return err
+	}
 
 	var owner string
 	if len(args) == 1 {
@@ -58,7 +60,12 @@ func runRepairE(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("pat is required")
 	}
 
-	c := pkg.NewClient(http.DefaultClient, os.Getenv("ACTUATED_URL"))
+	controllerURL, err := getControllerURL()
+	if err != nil {
+		return err
+	}
+
+	c := pkg.NewClient(http.DefaultClient, controllerURL)
 
 	res, status, err := c.Repair(pat, owner, staff)
 	if err != nil {

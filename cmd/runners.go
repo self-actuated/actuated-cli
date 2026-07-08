@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/self-actuated/actuated-cli/pkg"
@@ -37,6 +36,11 @@ func makeRunners() *cobra.Command {
 
 func runRunnersE(cmd *cobra.Command, args []string) error {
 
+	platform := getPlatform()
+	if platform == PlatformGitLab {
+		return runGitLabRunnersE(cmd, args)
+	}
+
 	images, err := cmd.Flags().GetBool("images")
 	if err != nil {
 		return err
@@ -66,7 +70,12 @@ func runRunnersE(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("pat is required")
 	}
 
-	c := pkg.NewClient(http.DefaultClient, os.Getenv("ACTUATED_URL"))
+	controllerURL, err := getControllerURL()
+	if err != nil {
+		return err
+	}
+
+	c := pkg.NewClient(http.DefaultClient, controllerURL)
 
 	res, status, err := c.ListRunners(pat, owner, staff, images, requestJson)
 	if err != nil {
