@@ -113,7 +113,7 @@ func runProfileE(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	var snapshots []ProfileSnapshot
+	var snapshots []ProfileSummary
 	if err := json.Unmarshal([]byte(body), &snapshots); err != nil {
 		return err
 	}
@@ -131,7 +131,7 @@ func printProfileJSON(w io.Writer, body []byte) error {
 	return err
 }
 
-func printProfiles(w io.Writer, snapshots []ProfileSnapshot) {
+func printProfiles(w io.Writer, snapshots []ProfileSummary) {
 	table := newProfileTable(w)
 	table.SetHeader([]string{"AGE", "REPO", "JOB/WORKFLOW", "AGENT/VM", "RUNTIME", "VCPU", "LOAD 1/5", "RAM", "DISK"})
 
@@ -140,12 +140,12 @@ func printProfiles(w io.Writer, snapshots []ProfileSnapshot) {
 			profileAge(snapshot.CompletedAt),
 			snapshot.Repo,
 			snapshot.Job + "\n" + snapshot.Workflow,
-			profileAgent(snapshot) + "\n" + valueOrNA(snapshot.Hostname),
-			profileRuntime(snapshot),
-			profileCPU(snapshot),
-			profileLoads(snapshot),
-			profileUsage(snapshot.TotalMemory, snapshot.MinAvailableMemory),
-			profileUsage(snapshot.DiskSpaceTotal, snapshot.DiskSpaceFree),
+			profileAgent(snapshot.AgentName) + "\n" + valueOrNA(snapshot.Hostname),
+			profileRuntime(snapshot.StartedAt, snapshot.CompletedAt),
+			profileCPU(snapshot.TotalCPU, snapshot.ShareFactor),
+			profileLoads(snapshot.MaxLoadAvg1, snapshot.MaxLoadAvg5),
+			profileUsage(snapshot.TotalMemoryGB, snapshot.MinAvailableMemoryGB),
+			profileUsage(snapshot.DiskSpaceTotalGB, snapshot.DiskSpaceFreeGB),
 		})
 	}
 
@@ -160,16 +160,16 @@ func printProfileDetails(w io.Writer, snapshot ProfileSnapshot) {
 		{"Repository", snapshot.Owner + "/" + snapshot.Repo},
 		{"Job", snapshot.Job},
 		{"Workflow", snapshot.Workflow},
-		{"Agent", profileAgent(snapshot)},
+		{"Agent", profileAgent(snapshot.AgentName)},
 		{"VM", valueOrNA(snapshot.Hostname)},
-		{"Runtime", profileRuntime(snapshot)},
-		{"vCPU", profileCPU(snapshot)},
+		{"Runtime", profileRuntime(snapshot.StartedAt, snapshot.CompletedAt)},
+		{"vCPU", profileCPU(snapshot.TotalCPU, snapshot.ShareFactor)},
 		{"Load average 1/5/15m", joinProfileValues(snapshot.MaxLoadAvg1, snapshot.MaxLoadAvg5, snapshot.MaxLoadAvg15)},
-		{"RAM total", formatProfileBytes(snapshot.TotalMemory)},
-		{"RAM minimum available", formatProfileBytes(snapshot.MinAvailableMemory)},
-		{"Disk total/free/used", joinProfileBytes(snapshot.DiskSpaceTotal, snapshot.DiskSpaceFree, snapshot.DiskSpaceUsed)},
-		{"Disk read/write", joinProfileBytes(snapshot.DiskReadTotal, snapshot.DiskWriteTotal)},
-		{"Network RX/TX", joinProfileBytes(snapshot.NetworkReadTotal, snapshot.NetworkWriteTotal)},
+		{"RAM total", formatProfileBytes(snapshot.TotalMemoryBytes)},
+		{"RAM minimum available", formatProfileBytes(snapshot.MinAvailableMemoryBytes)},
+		{"Disk total/free/used", joinProfileBytes(snapshot.DiskSpaceTotalBytes, snapshot.DiskSpaceFreeBytes, snapshot.DiskSpaceUsedBytes)},
+		{"Disk read/write", joinProfileBytes(snapshot.DiskReadTotalBytes, snapshot.DiskWriteTotalBytes)},
+		{"Network RX/TX", joinProfileBytes(snapshot.NetworkReadTotalBytes, snapshot.NetworkWriteTotalBytes)},
 	}
 	for _, row := range rows {
 		table.Append(row)
@@ -199,33 +199,33 @@ func profileAge(completed *time.Time) string {
 	return age.Round(time.Second).String()
 }
 
-func profileAgent(snapshot ProfileSnapshot) string {
-	if snapshot.AgentName == "" {
+func profileAgent(agentName string) string {
+	if agentName == "" {
 		return "n/a"
 	}
-	return snapshot.AgentName
+	return agentName
 }
 
-func profileRuntime(snapshot ProfileSnapshot) string {
-	if snapshot.StartedAt == nil || snapshot.CompletedAt == nil {
+func profileRuntime(startedAt, completedAt *time.Time) string {
+	if startedAt == nil || completedAt == nil {
 		return "n/a"
 	}
-	return snapshot.CompletedAt.Sub(*snapshot.StartedAt).Round(time.Second).String()
+	return completedAt.Sub(*startedAt).Round(time.Second).String()
 }
 
-func profileCPU(snapshot ProfileSnapshot) string {
-	if snapshot.TotalCPU == nil {
+func profileCPU(totalCPU *int, shareFactor *float64) string {
+	if totalCPU == nil {
 		return "n/a"
 	}
-	cpu := float64(*snapshot.TotalCPU)
-	if snapshot.ShareFactor != nil && *snapshot.ShareFactor > 0 {
-		cpu *= *snapshot.ShareFactor
+	cpu := float64(*totalCPU)
+	if shareFactor != nil && *shareFactor > 0 {
+		cpu *= *shareFactor
 	}
 	return strconv.FormatFloat(cpu, 'f', -1, 64)
 }
 
-func profileLoads(snapshot ProfileSnapshot) string {
-	return joinProfileValues(snapshot.MaxLoadAvg1, snapshot.MaxLoadAvg5)
+func profileLoads(load1, load5 *float64) string {
+	return joinProfileValues(load1, load5)
 }
 
 func profileUsage(total, available *float64) string {
@@ -280,6 +280,31 @@ func formatProfileBytes(value *float64) string {
 	return fmt.Sprintf("%.2f%s", size, units[unit])
 }
 
+// ProfileSummary matches the controller's snapshots list response. Capacity
+// fields are converted to decimal GB by the controller query.
+type ProfileSummary struct {
+	JobID       string     `json:"job_id"`
+	Owner       string     `json:"owner"`
+	Repo        string     `json:"repo"`
+	Job         string     `json:"job"`
+	Workflow    string     `json:"workflow"`
+	AgentName   string     `json:"agent_name,omitempty"`
+	Hostname    string     `json:"hostname,omitempty"`
+	StartedAt   *time.Time `json:"started_at,omitempty"`
+	CompletedAt *time.Time `json:"completed_at,omitempty"`
+
+	TotalCPU             *int     `json:"total_cpu,omitempty"`
+	TotalMemoryGB        *float64 `json:"total_memory,omitempty"`
+	MinAvailableMemoryGB *float64 `json:"min_memory_available_gb,omitempty"`
+	ShareFactor          *float64 `json:"share_factor,omitempty"`
+	MaxLoadAvg1          *float64 `json:"max_load_avg1,omitempty"`
+	MaxLoadAvg5          *float64 `json:"max_load_avg5,omitempty"`
+	DiskSpaceTotalGB     *float64 `json:"disk_space_total,omitempty"`
+	DiskSpaceFreeGB      *float64 `json:"disk_space_free,omitempty"`
+}
+
+// ProfileSnapshot matches the controller's detailed snapshot response. Byte
+// counters are returned directly from the stored vmmeter snapshot.
 type ProfileSnapshot struct {
 	JobID       string     `json:"job_id"`
 	Owner       string     `json:"owner"`
@@ -291,18 +316,18 @@ type ProfileSnapshot struct {
 	StartedAt   *time.Time `json:"started_at,omitempty"`
 	CompletedAt *time.Time `json:"completed_at,omitempty"`
 
-	TotalCPU           *int     `json:"total_cpu,omitempty"`
-	TotalMemory        *float64 `json:"total_memory,omitempty"`
-	MinAvailableMemory *float64 `json:"min_memory_available_gb,omitempty"`
-	ShareFactor        *float64 `json:"share_factor,omitempty"`
-	MaxLoadAvg1        *float64 `json:"max_load_avg1,omitempty"`
-	MaxLoadAvg5        *float64 `json:"max_load_avg5,omitempty"`
-	MaxLoadAvg15       *float64 `json:"max_load_avg15,omitempty"`
-	DiskSpaceTotal     *float64 `json:"disk_space_total,omitempty"`
-	DiskSpaceFree      *float64 `json:"disk_space_free,omitempty"`
-	DiskSpaceUsed      *float64 `json:"disk_space_used,omitempty"`
-	DiskReadTotal      *float64 `json:"disk_read_total,omitempty"`
-	DiskWriteTotal     *float64 `json:"disk_write_total,omitempty"`
-	NetworkReadTotal   *float64 `json:"network_read_total,omitempty"`
-	NetworkWriteTotal  *float64 `json:"network_write_total,omitempty"`
+	TotalCPU                *int     `json:"total_cpu,omitempty"`
+	TotalMemoryBytes        *float64 `json:"total_memory,omitempty"`
+	MinAvailableMemoryBytes *float64 `json:"min_memory_available_gb,omitempty"`
+	ShareFactor             *float64 `json:"share_factor,omitempty"`
+	MaxLoadAvg1             *float64 `json:"max_load_avg1,omitempty"`
+	MaxLoadAvg5             *float64 `json:"max_load_avg5,omitempty"`
+	MaxLoadAvg15            *float64 `json:"max_load_avg15,omitempty"`
+	DiskSpaceTotalBytes     *float64 `json:"disk_space_total,omitempty"`
+	DiskSpaceFreeBytes      *float64 `json:"disk_space_free,omitempty"`
+	DiskSpaceUsedBytes      *float64 `json:"disk_space_used,omitempty"`
+	DiskReadTotalBytes      *float64 `json:"disk_read_total,omitempty"`
+	DiskWriteTotalBytes     *float64 `json:"disk_write_total,omitempty"`
+	NetworkReadTotalBytes   *float64 `json:"network_read_total,omitempty"`
+	NetworkWriteTotalBytes  *float64 `json:"network_write_total,omitempty"`
 }
