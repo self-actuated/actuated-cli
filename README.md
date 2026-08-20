@@ -4,7 +4,7 @@ The actuated-cli requires an access token for GitHub and is designed to be used 
 
 Most of the operations on the actuated dashboard are available as CLI commands.
 
-In GitHub's terminology, which is carried over into actuated, the flag `--owner` and the term "OWNER" refer exclusively to a GitHub organization, and not your personal user account (which would be the "actor").
+In GitHub's terminology, which is carried over into actuated, the flag `--owner` and the term "OWNER" refer to a repository owner. This can be a GitHub organization or your personal account.
 
 ## Installation
 
@@ -40,6 +40,20 @@ actuated-cli jobs actuated-samples
 
 ```bash
 actuated-cli runners actuated-samples
+```
+
+## Profile completed jobs
+
+List recent profiling snapshots for an organisation or personal repository owner:
+
+```bash
+actuated-cli profile OWNER
+```
+
+Inspect the full snapshot for a GitHub Actions job:
+
+```bash
+actuated-cli profile OWNER --id JOB_ID
 ```
 
 ## View SSH sessions available:

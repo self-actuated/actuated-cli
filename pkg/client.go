@@ -24,6 +24,70 @@ func NewClient(httpClient *http.Client, baseURL string) *Client {
 	}
 }
 
+func (c *Client) ListProfiles(patStr, owner string, limit int, staff bool) (string, int, error) {
+	u, _ := url.Parse(c.baseURL)
+	u.Path = "/api/v1/snapshots"
+	q := u.Query()
+	q.Set("owners", owner)
+	q.Set("limit", fmt.Sprintf("%d", limit))
+	if staff {
+		q.Set("staff", "1")
+	}
+	u.RawQuery = q.Encode()
+
+	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
+	if err != nil {
+		return "", http.StatusBadRequest, err
+	}
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Authorization", "Bearer "+patStr)
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return "", http.StatusServiceUnavailable, err
+	}
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return "", res.StatusCode, err
+	}
+
+	return string(body), res.StatusCode, nil
+}
+
+func (c *Client) GetProfile(patStr, owner, jobID string, staff bool) (string, int, error) {
+	u, _ := url.Parse(c.baseURL)
+	u.Path = "/api/v1/snapshot"
+	q := u.Query()
+	q.Set("owner", owner)
+	q.Set("job", jobID)
+	if staff {
+		q.Set("staff", "1")
+	}
+	u.RawQuery = q.Encode()
+
+	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
+	if err != nil {
+		return "", http.StatusBadRequest, err
+	}
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Authorization", "Bearer "+patStr)
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return "", http.StatusServiceUnavailable, err
+	}
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return "", res.StatusCode, err
+	}
+
+	return string(body), res.StatusCode, nil
+}
+
 func (c *Client) ListJobs(patStr string, owner string, staff bool, json bool) (string, int, error) {
 
 	u, _ := url.Parse(c.baseURL)
