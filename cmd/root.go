@@ -18,8 +18,8 @@ func init() {
 		Long: `This CLI can be used to review and manage jobs, and the actuated
 agent installed on your servers.
 
-The --owner flag or OWNER argument is a GitHub organization, i.e. for the path:
-self-actuated/actuated-cli, the owner is "self-actuated" also known as an org.
+The --owner flag or OWNER argument is a GitHub repository owner. This can be
+an organisation such as "self-actuated", or your personal GitHub account.
 
 Run "actuated-cli auth" to authenticate with GitHub.
 
