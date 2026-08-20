@@ -52,6 +52,7 @@ https://github.com/self-actuated/actuated-cli
 	root.AddCommand(makeJobs())
 	root.AddCommand(makeRepair())
 	root.AddCommand(makeIncreases())
+	root.AddCommand(makeProfile())
 
 	root.AddCommand(makeRestart())
 	root.AddCommand(makeAgentLogs())
