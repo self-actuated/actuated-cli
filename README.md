@@ -40,6 +40,9 @@ actuated-cli jobs actuated-samples
 
 ```bash
 actuated-cli runners actuated-samples
+
+# Include the operating system reported by each agent
+actuated-cli runners --verbose actuated-samples
 ```
 
 ## Profile completed jobs

@@ -22,6 +22,9 @@ func makeRunners() *cobra.Command {
   # List runners for all customers
   actuated-cli runners --staff OWNER
 
+  # Include the operating system in the table
+  actuated-cli runners --verbose OWNER
+
   # List runners in JSON format
   actuated-cli runners --json OWNER
 `,
@@ -30,6 +33,7 @@ func makeRunners() *cobra.Command {
 	cmd.RunE = runRunnersE
 
 	cmd.Flags().Bool("images", false, "Show the image being used for the rootfs and Kernel")
+	cmd.Flags().BoolP("verbose", "v", false, "Show additional runner details")
 	cmd.Flags().BoolP("json", "j", false, "Request output in JSON format")
 
 	return cmd
@@ -56,6 +60,10 @@ func runRunnersE(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+	verbose, err := cmd.Flags().GetBool("verbose")
+	if err != nil {
+		return err
+	}
 
 	requestJson, err := cmd.Flags().GetBool("json")
 	if err != nil {
@@ -68,7 +76,7 @@ func runRunnersE(cmd *cobra.Command, args []string) error {
 
 	c := pkg.NewClient(http.DefaultClient, os.Getenv("ACTUATED_URL"))
 
-	res, status, err := c.ListRunners(pat, owner, staff, images, requestJson)
+	res, status, err := c.ListRunners(pat, owner, staff, images, verbose, requestJson)
 	if err != nil {
 		return err
 	}
