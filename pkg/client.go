@@ -133,7 +133,7 @@ func (c *Client) GetBuildIncreases(patStr string, owner string, startDate time.T
 	return string(body), res.StatusCode, nil
 }
 
-func (c *Client) ListRunners(patStr string, owner string, staff, images, json bool) (string, int, error) {
+func (c *Client) ListRunners(patStr string, owner string, staff, images, verbose, json bool) (string, int, error) {
 
 	u, _ := url.Parse(c.baseURL)
 	u.Path = "/api/v1/runners"
@@ -145,6 +145,10 @@ func (c *Client) ListRunners(patStr string, owner string, staff, images, json bo
 
 	if images {
 		q.Set("images", "1")
+	}
+
+	if verbose {
+		q.Set("verbose", "1")
 	}
 
 	if len(owner) > 0 {
