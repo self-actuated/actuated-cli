@@ -617,3 +617,31 @@ func (c *Client) DisableAgent(patStr, owner, host string, staff bool) (string, i
 
 	return string(body), res.StatusCode, nil
 }
+
+// ListEvents requests recent controller notifications for the supplied owners.
+func (c *Client) ListEvents(pat, owners string, staff bool) (string, int, error) {
+	u, err := url.Parse(c.baseURL)
+	if err != nil {
+		return "", http.StatusBadRequest, err
+	}
+	u.Path = "/api/v1/events"
+	q := u.Query()
+	q.Set("owners", owners)
+	if staff {
+		q.Set("staff", "1")
+	}
+	u.RawQuery = q.Encode()
+	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
+	if err != nil {
+		return "", http.StatusBadRequest, err
+	}
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Authorization", "Bearer "+pat)
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return "", http.StatusServiceUnavailable, err
+	}
+	defer res.Body.Close()
+	body, err := io.ReadAll(res.Body)
+	return string(body), res.StatusCode, err
+}
