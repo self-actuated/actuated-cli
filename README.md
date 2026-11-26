@@ -197,6 +197,13 @@ API rate limits apply, so do not run the CLI within a loop or `watch` command.
 
 The `--staff` flag can be added to the `runners`, `jobs` and the `repair` commands by OpenFaaS Ltd staff to support actuated customers.
 
+## Events
+
+Run `actuated-cli events` to list recent notifications across your GitHub
+organizations, or `actuated-cli events OWNER` for one organization. Use `--json`
+for JSON output and `--since 12h` to filter recent events by time. The controller
+only returns events from the past day.
+
 ## Help & support
 
 Reach out to our team on Slack.

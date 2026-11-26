@@ -50,6 +50,7 @@ https://github.com/self-actuated/actuated-cli
 
 	root.AddCommand(makeRunners())
 	root.AddCommand(makeJobs())
+	root.AddCommand(makeEvents())
 	root.AddCommand(makeRepair())
 	root.AddCommand(makeIncreases())
 	root.AddCommand(makeProfile())
